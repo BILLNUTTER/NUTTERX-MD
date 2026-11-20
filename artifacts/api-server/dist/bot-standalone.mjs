@@ -6387,7 +6387,10 @@ async function getCachedGroupMeta(sock, jid) {
     meta = await Promise.race([
       sock.groupMetadata(jid),
       new Promise((_, reject) => {
-        timeout = setTimeout(() => reject(new Error(`groupMetadata timeout for ${jid}`)), GROUP_META_TIMEOUT);
+        timeout = setTimeout(
+          () => reject(new Error(`groupMetadata timeout for ${jid}`)),
+          GROUP_META_TIMEOUT
+        );
       })
     ]);
   } finally {
@@ -6407,7 +6410,11 @@ function invalidateGroupMetaCache(jid) {
 function populateGroupMetaCache(groups) {
   const expireAt = Date.now() + GROUP_META_TTL;
   for (const [jid, meta] of Object.entries(groups)) {
-    groupMetaCache.set(jid, { subject: meta.subject, participants: meta.participants, expireAt });
+    groupMetaCache.set(jid, {
+      subject: meta.subject,
+      participants: meta.participants,
+      expireAt
+    });
   }
   return Object.keys(groups).length;
 }
@@ -6441,13 +6448,18 @@ async function handleStatusMessage(sock, msg) {
   const settings = getBotSettings();
   const senderJid = msg.key.participant || msg.key.participantAlt || "";
   if (!senderJid || senderJid === "status@broadcast") {
-    logger.debug({ messageId: msg.key.id }, "Status event has no resolvable poster JID");
+    logger.debug(
+      { messageId: msg.key.id },
+      "Status event has no resolvable poster JID"
+    );
     return;
   }
   if (settings.autoViewStatus || settings.autoLikeStatus) {
     try {
       await sock.readMessages([msg.key]);
-      if (settings.autoViewStatus) logger.debug({ sender: senderJid }, "Status viewed");
+      if (settings.autoViewStatus) {
+        logger.debug({ sender: senderJid }, "Status viewed");
+      }
     } catch (err) {
       logger.debug({ err, sender: senderJid }, "Status read receipt failed");
     }
@@ -6458,7 +6470,12 @@ async function handleStatusMessage(sock, msg) {
       const emoji = emojiList[Math.floor(Math.random() * emojiList.length)] || "\u2764\uFE0F";
       await sock.sendMessage(
         "status@broadcast",
-        { react: { text: emoji, key: { ...msg.key, remoteJid: "status@broadcast" } } },
+        {
+          react: {
+            text: emoji,
+            key: { ...msg.key, remoteJid: "status@broadcast" }
+          }
+        },
         { statusJidList: [senderJid] }
       );
       logger.debug({ sender: senderJid, emoji }, "Status reaction sent");
@@ -6467,7 +6484,7 @@ async function handleStatusMessage(sock, msg) {
     }
   }
 }
-var HANDLER_VERSION = "v2.5-LID-LIVE-RESOLVE";
+var HANDLER_VERSION = "v2.6-MESSAGE-BODY-LOG";
 async function handleMessage(sock, msg) {
   if (!msg.key) {
     logger.warn("handleMessage called with no msg.key \u2014 dropped");
@@ -6483,10 +6500,16 @@ async function handleMessage(sock, msg) {
   logger.debug({ v: HANDLER_VERSION }, "Handler version");
   const msgContent = msg.message;
   if (msgContent?.protocolMessage || msgContent?.reactionMessage || msgContent?.pollUpdateMessage || msgContent?.keepInChatMessage || msgContent?.senderKeyDistributionMessage) {
-    logger.info({ jid, type: msgContent ? Object.keys(msgContent)[0] : "unknown" }, "\u21A9 Protocol message dropped in handler");
+    logger.info(
+      { jid, type: msgContent ? Object.keys(msgContent)[0] : "unknown" },
+      "\u21A9 Protocol message dropped in handler"
+    );
     return;
   }
-  logger.debug({ jid, fromMe: msg.key.fromMe, msgKeys: Object.keys(msg.message || {}) }, "Message handler reached");
+  logger.debug(
+    { jid, fromMe: msg.key.fromMe, msgKeys: Object.keys(msg.message || {}) },
+    "Message handler reached"
+  );
   const isGroup = jid.endsWith("@g.us");
   const botJidFull = sock.user?.id || "";
   let isOwner = false;
@@ -6503,12 +6526,23 @@ async function handleMessage(sock, msg) {
   } else {
     senderJidRaw = isGroup ? msg.key.participant || botJidFull : jid;
     const alternateSenderJid = isGroup ? msg.key.participantAlt : msg.key.remoteJidAlt;
-    realSenderJid = resolveMessageJid(sock, senderJidRaw, alternateSenderJid);
+    realSenderJid = resolveMessageJid(
+      sock,
+      senderJidRaw,
+      alternateSenderJid
+    );
     senderNumber = realSenderJid.split(":")[0].split("@")[0];
     const numberMatch = ownerNumber !== "" && senderNumber === ownerNumber;
     isOwner = numberMatch;
     logger.debug(
-      { ownerNumber, senderNumber, senderJidRaw, realSenderJid, numberMatch, isOwner },
+      {
+        ownerNumber,
+        senderNumber,
+        senderJidRaw,
+        realSenderJid,
+        numberMatch,
+        isOwner
+      },
       "\u{1F511} Owner resolution"
     );
   }
@@ -6517,20 +6551,28 @@ async function handleMessage(sock, msg) {
   const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || msg.message?.documentMessage?.caption || msg.message?.buttonsResponseMessage?.selectedButtonId || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId || msg.message?.templateButtonReplyMessage?.selectedId || "";
   logger.info(
     {
+      jid,
+      senderNumber,
       fromMe: !!msg.key.fromMe,
       isGroup,
       msgType,
       hasText: Boolean(body),
+      body: body.slice(0, 500),
       botMode
     },
-    "Incoming message reached command handler"
+    "\u{1F4E9} Incoming message reached command handler"
   );
   if (botMode === "private" && !isOwner) {
     logger.info({ msgType, botMode }, "Message ignored by private mode");
     return;
   }
   if (!body) {
-    printMessageActivity({ msgType, pushName: msg.pushName || "", senderNumber, isGroup });
+    printMessageActivity({
+      msgType,
+      pushName: msg.pushName || "",
+      senderNumber,
+      isGroup
+    });
     logger.info({ msgType }, "Message ignored because it has no text body");
     return;
   }
@@ -6542,7 +6584,9 @@ async function handleMessage(sock, msg) {
   let groupNumber;
   if (isGroup) {
     groupSettings = getGroupSettings(jid);
-    if (groupSettings?.customPrefix) prefix = groupSettings.customPrefix;
+    if (groupSettings?.customPrefix) {
+      prefix = groupSettings.customPrefix;
+    }
     const hasGroupProtection = !!groupSettings && (groupSettings.antilink || groupSettings.antibadword !== "off" || groupSettings.antimention);
     const commandName = body.startsWith(prefix) ? body.slice(prefix.length).trim().split(/\s+/, 1)[0]?.toLowerCase() ?? "" : "";
     const needsGroupAdminContext = GROUP_ADMIN_CONTEXT_COMMANDS.has(commandName);
@@ -6555,8 +6599,12 @@ async function handleMessage(sock, msg) {
         for (const participant of groupMeta.participants) {
           const pNum = participant.id.split(":")[0].split("@")[0];
           const isAdmin2 = participant.admin === "admin" || participant.admin === "superadmin";
-          if (pNum === senderNumber) isSenderGroupAdmin = isAdmin2;
-          if (pNum === botNumber) isBotGroupAdmin = isAdmin2;
+          if (pNum === senderNumber) {
+            isSenderGroupAdmin = isAdmin2;
+          }
+          if (pNum === botNumber) {
+            isBotGroupAdmin = isAdmin2;
+          }
         }
         const msgKey = msg.key;
         if (groupSettings) {
@@ -6576,7 +6624,11 @@ async function handleMessage(sock, msg) {
               await safeSend(sock, jid, { delete: msgKey });
             }
             if (count > 1 && isBotGroupAdmin) {
-              await sock.groupParticipantsUpdate(jid, [realSenderJid], "remove");
+              await sock.groupParticipantsUpdate(
+                jid,
+                [realSenderJid],
+                "remove"
+              );
               linkViolations.delete(violationKey);
               await safeSend(sock, jid, {
                 text: `\u{1F6AB} @${realSenderJid.split("@")[0].split(":")[0]} was removed for posting another link after a warning.`,
@@ -6603,9 +6655,15 @@ async function handleMessage(sock, msg) {
               if (!oldest) break;
               badWordViolations.delete(oldest);
             }
-            if (isBotGroupAdmin) await safeSend(sock, jid, { delete: msgKey });
+            if (isBotGroupAdmin) {
+              await safeSend(sock, jid, { delete: msgKey });
+            }
             if (groupSettings.antibadword === "kick" && entry.count >= 3 && isBotGroupAdmin) {
-              await sock.groupParticipantsUpdate(jid, [realSenderJid], "remove");
+              await sock.groupParticipantsUpdate(
+                jid,
+                [realSenderJid],
+                "remove"
+              );
               badWordViolations.delete(violationKey);
               await safeSend(sock, jid, {
                 text: `\u{1F6AB} @${realSenderJid.split("@")[0]} was removed after three bad-language violations in 24 hours.`,
@@ -6629,19 +6687,36 @@ async function handleMessage(sock, msg) {
           }
         }
       } catch (err) {
-        logger.debug({ err, jid }, "Group metadata lookup failed; continuing");
+        logger.debug(
+          { err, jid },
+          "Group metadata lookup failed; continuing"
+        );
       }
     }
   }
-  printMessageActivity({ msgType, pushName: msg.pushName || "", senderNumber, isGroup, groupName, groupNumber });
+  printMessageActivity({
+    msgType,
+    pushName: msg.pushName || "",
+    senderNumber,
+    isGroup,
+    groupName,
+    groupNumber
+  });
   if (!body.startsWith(prefix)) {
-    logger.info({ prefix, msgType }, "Message ignored because it does not start with the configured prefix");
+    logger.info(
+      { prefix, msgType },
+      "Message ignored because it does not start with the configured prefix"
+    );
     if (isGroup && groupSettings?.autoReply) {
       try {
         const autoReplyMap = JSON.parse(groupSettings.autoReply);
         const bodyLower = body.toLowerCase().trim();
-        const matched = Object.entries(autoReplyMap).find(([trigger]) => bodyLower.includes(trigger.toLowerCase()));
-        if (matched) await safeSend(sock, jid, { text: matched[1] });
+        const matched = Object.entries(autoReplyMap).find(
+          ([trigger]) => bodyLower.includes(trigger.toLowerCase())
+        );
+        if (matched) {
+          await safeSend(sock, jid, { text: matched[1] });
+        }
       } catch {
       }
     }
@@ -6658,28 +6733,52 @@ async function handleMessage(sock, msg) {
     if (resolved.endsWith("@lid")) {
       if (isOwner) {
         replyJid = `${ownerNumber}@s.whatsapp.net`;
-        logger.info({ lid: jid, fallback: replyJid }, "\u{1F500} Owner @lid unresolved \u2014 using owner JID as reply fallback");
+        logger.info(
+          { lid: jid, fallback: replyJid },
+          "\u{1F500} Owner @lid unresolved \u2014 using owner JID as reply fallback"
+        );
       } else {
         replyJid = jid;
-        logger.warn({ lid: jid }, "\u26A0\uFE0F Unknown @lid \u2014 no mapping available, reply may not deliver");
+        logger.warn(
+          { lid: jid },
+          "\u26A0\uFE0F Unknown @lid \u2014 no mapping available, reply may not deliver"
+        );
       }
     } else {
       replyJid = resolved;
-      if (replyJid !== jid) logger.info({ lid: jid, resolved: replyJid }, "\u{1F500} @lid resolved for reply");
+      if (replyJid !== jid) {
+        logger.info(
+          { lid: jid, resolved: replyJid },
+          "\u{1F500} @lid resolved for reply"
+        );
+      }
     }
   }
   const userSettings = getUserSettings(realSenderJid);
   if (userSettings?.isBanned && !isOwner) {
-    await safeSend(sock, replyJid, { text: "You are banned from using this bot." });
+    await safeSend(sock, replyJid, {
+      text: "You are banned from using this bot."
+    });
     return;
   }
-  const ctx = { jid: replyJid, isGroup, isOwner, isSenderGroupAdmin, isBotGroupAdmin, groupSettings, prefix };
+  const ctx = {
+    jid: replyJid,
+    isGroup,
+    isOwner,
+    isSenderGroupAdmin,
+    isBotGroupAdmin,
+    groupSettings,
+    prefix
+  };
   const commandText = body.slice(prefix.length).trim();
   const parts = commandText.split(/\s+/).filter(Boolean);
   const [command = "", ...args] = parts;
   const cmd = command.toLowerCase();
   let patchedMsg = msg.key.remoteJid !== replyJid ? { ...msg, key: { ...msg.key, remoteJid: replyJid } } : msg;
-  logger.info({ cmd, jid, replyJid, isOwner }, "Command received");
+  logger.info(
+    { cmd, jid, replyJid, isOwner },
+    "Command received"
+  );
   switch (cmd) {
     case "ping":
       return handlePing(sock, patchedMsg, ctx);
@@ -6715,13 +6814,17 @@ async function handleMessage(sock, msg) {
       }
       const val = args[0]?.toLowerCase();
       if (val !== "true" && val !== "false" && val !== "on" && val !== "off") {
-        await safeSend(sock, replyJid, { text: `Current: ${getBotSettings().autoViewStatus ? "ON" : "OFF"}
-Usage: ${prefix}autoviewstatus on/off` });
+        await safeSend(sock, replyJid, {
+          text: `Current: ${getBotSettings().autoViewStatus ? "ON" : "OFF"}
+Usage: ${prefix}autoviewstatus on/off`
+        });
         return;
       }
       const enabled = val === "true" || val === "on";
       updateBotSettings({ autoViewStatus: enabled });
-      await safeSend(sock, replyJid, { text: `Auto-view status: *${enabled ? "ON" : "OFF"}*` });
+      await safeSend(sock, replyJid, {
+        text: `Auto-view status: *${enabled ? "ON" : "OFF"}*`
+      });
       return;
     }
     case "autolikestatus":
@@ -6732,13 +6835,17 @@ Usage: ${prefix}autoviewstatus on/off` });
       }
       const val = args[0]?.toLowerCase();
       if (val !== "true" && val !== "false" && val !== "on" && val !== "off") {
-        await safeSend(sock, replyJid, { text: `Current: ${getBotSettings().autoLikeStatus ? "ON" : "OFF"}
-Usage: ${prefix}autolikestatus on/off` });
+        await safeSend(sock, replyJid, {
+          text: `Current: ${getBotSettings().autoLikeStatus ? "ON" : "OFF"}
+Usage: ${prefix}autolikestatus on/off`
+        });
         return;
       }
       const enabled = val === "true" || val === "on";
       updateBotSettings({ autoLikeStatus: enabled });
-      await safeSend(sock, replyJid, { text: `Auto-like status: *${enabled ? "ON" : "OFF"}*` });
+      await safeSend(sock, replyJid, {
+        text: `Auto-like status: *${enabled ? "ON" : "OFF"}*`
+      });
       return;
     }
     case "statusemoji": {
@@ -6748,18 +6855,24 @@ Usage: ${prefix}autolikestatus on/off` });
       }
       const emoji = args.join(" ").trim();
       if (!emoji) {
-        await safeSend(sock, replyJid, { text: `Current emoji: ${getBotSettings().statusLikeEmoji}
-Usage: ${prefix}statusemoji \u2764\uFE0F,\u{1F525},\u{1F60D}` });
+        await safeSend(sock, replyJid, {
+          text: `Current emoji: ${getBotSettings().statusLikeEmoji}
+Usage: ${prefix}statusemoji \u2764\uFE0F,\u{1F525},\u{1F60D}`
+        });
         return;
       }
       updateBotSettings({ statusLikeEmoji: emoji });
-      await safeSend(sock, replyJid, { text: `Status like emoji set to: *${emoji}*` });
+      await safeSend(sock, replyJid, {
+        text: `Status like emoji set to: *${emoji}*`
+      });
       return;
     }
     case "autoread":
     case "smartreply": {
       if (!isOwner) {
-        await safeSend(sock, replyJid, { text: "\u{1F6AB} Only the owner can change bot-wide features." });
+        await safeSend(sock, replyJid, {
+          text: "\u{1F6AB} Only the owner can change bot-wide features."
+        });
         return;
       }
       const raw = args[0]?.toLowerCase();
@@ -6773,9 +6886,14 @@ Current: ${enabled2 ? "ON" : "OFF"}`
         return;
       }
       const enabled = raw === "on";
-      if (command === "autoread") updateBotSettings({ autoRead: enabled });
-      else updateBotSettings({ smartReply: enabled });
-      await safeSend(sock, replyJid, { text: `${command} is now ${enabled ? "ON" : "OFF"}.` });
+      if (command === "autoread") {
+        updateBotSettings({ autoRead: enabled });
+      } else {
+        updateBotSettings({ smartReply: enabled });
+      }
+      await safeSend(sock, replyJid, {
+        text: `${command} is now ${enabled ? "ON" : "OFF"}.`
+      });
       return;
     }
     case "kick":
@@ -6821,7 +6939,9 @@ Current: ${enabled2 ? "ON" : "OFF"}`
     case "autoreply":
       return handleAutoReply(sock, patchedMsg, ctx, args);
     default:
-      await safeSend(sock, replyJid, { text: `Unknown command. Send ${prefix}menu to see the working commands.` });
+      await safeSend(sock, replyJid, {
+        text: `Unknown command. Send ${prefix}menu to see the working commands.`
+      });
       return;
   }
 }
@@ -6837,7 +6957,10 @@ async function handleGroupParticipantsUpdate(sock, update) {
       const participantJid = typeof participant === "string" ? participant : participant.id;
       const name = `@${participantJid.split("@")[0]}`;
       const welcomeText = welcomeTemplate.replace(/\{name\}/gi, name).replace(/\{group\}/gi, groupMeta.subject);
-      await safeSend(sock, groupId, { text: welcomeText, mentions: [participantJid] });
+      await safeSend(sock, groupId, {
+        text: welcomeText,
+        mentions: [participantJid]
+      });
     }
   } catch (err) {
     logger.warn({ err, groupId }, "Failed to send welcome message");
