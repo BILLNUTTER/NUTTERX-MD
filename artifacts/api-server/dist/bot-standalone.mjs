@@ -1,0 +1,7543 @@
+import { createRequire as __bannerCrReq } from "node:module";
+import __bannerPath from "node:path";
+import __bannerUrl from "node:url";
+
+globalThis.require = __bannerCrReq(import.meta.url);
+globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
+globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
+
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+var __commonJS = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-helpers.js
+var require_err_helpers = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-helpers.js"(exports, module) {
+    "use strict";
+    var isErrorLike = (err) => {
+      return err && typeof err.message === "string";
+    };
+    var getErrorCause = (err) => {
+      if (!err) return;
+      const cause = err.cause;
+      if (typeof cause === "function") {
+        const causeResult = err.cause();
+        return isErrorLike(causeResult) ? causeResult : void 0;
+      } else {
+        return isErrorLike(cause) ? cause : void 0;
+      }
+    };
+    var _stackWithCauses = (err, seen) => {
+      if (!isErrorLike(err)) return "";
+      const stack = err.stack || "";
+      if (seen.has(err)) {
+        return stack + "\ncauses have become circular...";
+      }
+      const cause = getErrorCause(err);
+      if (cause) {
+        seen.add(err);
+        return stack + "\ncaused by: " + _stackWithCauses(cause, seen);
+      } else {
+        return stack;
+      }
+    };
+    var stackWithCauses = (err) => _stackWithCauses(err, /* @__PURE__ */ new Set());
+    var _messageWithCauses = (err, seen, skip) => {
+      if (!isErrorLike(err)) return "";
+      const message = skip ? "" : err.message || "";
+      if (seen.has(err)) {
+        return message + ": ...";
+      }
+      const cause = getErrorCause(err);
+      if (cause) {
+        seen.add(err);
+        const skipIfVErrorStyleCause = typeof err.cause === "function";
+        return message + (skipIfVErrorStyleCause ? "" : ": ") + _messageWithCauses(cause, seen, skipIfVErrorStyleCause);
+      } else {
+        return message;
+      }
+    };
+    var messageWithCauses = (err) => _messageWithCauses(err, /* @__PURE__ */ new Set());
+    module.exports = {
+      isErrorLike,
+      getErrorCause,
+      stackWithCauses,
+      messageWithCauses
+    };
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-proto.js
+var require_err_proto = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-proto.js"(exports, module) {
+    "use strict";
+    var seen = /* @__PURE__ */ Symbol("circular-ref-tag");
+    var rawSymbol = /* @__PURE__ */ Symbol("pino-raw-err-ref");
+    var pinoErrProto = Object.create({}, {
+      type: {
+        enumerable: true,
+        writable: true,
+        value: void 0
+      },
+      message: {
+        enumerable: true,
+        writable: true,
+        value: void 0
+      },
+      stack: {
+        enumerable: true,
+        writable: true,
+        value: void 0
+      },
+      aggregateErrors: {
+        enumerable: true,
+        writable: true,
+        value: void 0
+      },
+      raw: {
+        enumerable: false,
+        get: function() {
+          return this[rawSymbol];
+        },
+        set: function(val) {
+          this[rawSymbol] = val;
+        }
+      }
+    });
+    Object.defineProperty(pinoErrProto, rawSymbol, {
+      writable: true,
+      value: {}
+    });
+    module.exports = {
+      pinoErrProto,
+      pinoErrorSymbols: {
+        seen,
+        rawSymbol
+      }
+    };
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err.js
+var require_err = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err.js"(exports, module) {
+    "use strict";
+    module.exports = errSerializer;
+    var { messageWithCauses, stackWithCauses, isErrorLike } = require_err_helpers();
+    var { pinoErrProto, pinoErrorSymbols } = require_err_proto();
+    var { seen } = pinoErrorSymbols;
+    var { toString } = Object.prototype;
+    function errSerializer(err) {
+      if (!isErrorLike(err)) {
+        return err;
+      }
+      err[seen] = void 0;
+      const _err = Object.create(pinoErrProto);
+      _err.type = toString.call(err.constructor) === "[object Function]" ? err.constructor.name : err.name;
+      _err.message = messageWithCauses(err);
+      _err.stack = stackWithCauses(err);
+      if (Array.isArray(err.errors)) {
+        _err.aggregateErrors = err.errors.map((err2) => errSerializer(err2));
+      }
+      for (const key in err) {
+        if (_err[key] === void 0) {
+          const val = err[key];
+          if (isErrorLike(val)) {
+            if (key !== "cause" && !Object.prototype.hasOwnProperty.call(val, seen)) {
+              _err[key] = errSerializer(val);
+            }
+          } else {
+            _err[key] = val;
+          }
+        }
+      }
+      delete err[seen];
+      _err.raw = err;
+      return _err;
+    }
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-with-cause.js
+var require_err_with_cause = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/err-with-cause.js"(exports, module) {
+    "use strict";
+    module.exports = errWithCauseSerializer;
+    var { isErrorLike } = require_err_helpers();
+    var { pinoErrProto, pinoErrorSymbols } = require_err_proto();
+    var { seen } = pinoErrorSymbols;
+    var { toString } = Object.prototype;
+    function errWithCauseSerializer(err) {
+      if (!isErrorLike(err)) {
+        return err;
+      }
+      err[seen] = void 0;
+      const _err = Object.create(pinoErrProto);
+      _err.type = toString.call(err.constructor) === "[object Function]" ? err.constructor.name : err.name;
+      _err.message = err.message;
+      _err.stack = err.stack;
+      if (Array.isArray(err.errors)) {
+        _err.aggregateErrors = err.errors.map((err2) => errWithCauseSerializer(err2));
+      }
+      if (isErrorLike(err.cause) && !Object.prototype.hasOwnProperty.call(err.cause, seen)) {
+        _err.cause = errWithCauseSerializer(err.cause);
+      }
+      for (const key in err) {
+        if (_err[key] === void 0) {
+          const val = err[key];
+          if (isErrorLike(val)) {
+            if (!Object.prototype.hasOwnProperty.call(val, seen)) {
+              _err[key] = errWithCauseSerializer(val);
+            }
+          } else {
+            _err[key] = val;
+          }
+        }
+      }
+      delete err[seen];
+      _err.raw = err;
+      return _err;
+    }
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/req.js
+var require_req = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/req.js"(exports, module) {
+    "use strict";
+    module.exports = {
+      mapHttpRequest,
+      reqSerializer
+    };
+    var rawSymbol = /* @__PURE__ */ Symbol("pino-raw-req-ref");
+    var pinoReqProto = Object.create({}, {
+      id: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      method: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      url: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      query: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      params: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      headers: {
+        enumerable: true,
+        writable: true,
+        value: {}
+      },
+      remoteAddress: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      remotePort: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      raw: {
+        enumerable: false,
+        get: function() {
+          return this[rawSymbol];
+        },
+        set: function(val) {
+          this[rawSymbol] = val;
+        }
+      }
+    });
+    Object.defineProperty(pinoReqProto, rawSymbol, {
+      writable: true,
+      value: {}
+    });
+    function reqSerializer(req) {
+      const connection = req.info || req.socket;
+      const _req = Object.create(pinoReqProto);
+      _req.id = typeof req.id === "function" ? req.id() : req.id || (req.info ? req.info.id : void 0);
+      _req.method = req.method;
+      if (req.originalUrl) {
+        _req.url = req.originalUrl;
+      } else {
+        const path3 = req.path;
+        _req.url = typeof path3 === "string" ? path3 : req.url ? req.url.path || req.url : void 0;
+      }
+      if (req.query) {
+        _req.query = req.query;
+      }
+      if (req.params) {
+        _req.params = req.params;
+      }
+      _req.headers = req.headers;
+      _req.remoteAddress = connection && connection.remoteAddress;
+      _req.remotePort = connection && connection.remotePort;
+      _req.raw = req.raw || req;
+      return _req;
+    }
+    function mapHttpRequest(req) {
+      return {
+        req: reqSerializer(req)
+      };
+    }
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/res.js
+var require_res = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/lib/res.js"(exports, module) {
+    "use strict";
+    module.exports = {
+      mapHttpResponse,
+      resSerializer
+    };
+    var rawSymbol = /* @__PURE__ */ Symbol("pino-raw-res-ref");
+    var pinoResProto = Object.create({}, {
+      statusCode: {
+        enumerable: true,
+        writable: true,
+        value: 0
+      },
+      headers: {
+        enumerable: true,
+        writable: true,
+        value: ""
+      },
+      raw: {
+        enumerable: false,
+        get: function() {
+          return this[rawSymbol];
+        },
+        set: function(val) {
+          this[rawSymbol] = val;
+        }
+      }
+    });
+    Object.defineProperty(pinoResProto, rawSymbol, {
+      writable: true,
+      value: {}
+    });
+    function resSerializer(res) {
+      const _res = Object.create(pinoResProto);
+      _res.statusCode = res.headersSent ? res.statusCode : null;
+      _res.headers = res.getHeaders ? res.getHeaders() : res._headers;
+      _res.raw = res;
+      return _res;
+    }
+    function mapHttpResponse(res) {
+      return {
+        res: resSerializer(res)
+      };
+    }
+  }
+});
+
+// node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/index.js
+var require_pino_std_serializers = __commonJS({
+  "node_modules/.pnpm/pino-std-serializers@7.1.0/node_modules/pino-std-serializers/index.js"(exports, module) {
+    "use strict";
+    var errSerializer = require_err();
+    var errWithCauseSerializer = require_err_with_cause();
+    var reqSerializers = require_req();
+    var resSerializers = require_res();
+    module.exports = {
+      err: errSerializer,
+      errWithCause: errWithCauseSerializer,
+      mapHttpRequest: reqSerializers.mapHttpRequest,
+      mapHttpResponse: resSerializers.mapHttpResponse,
+      req: reqSerializers.reqSerializer,
+      res: resSerializers.resSerializer,
+      wrapErrorSerializer: function wrapErrorSerializer(customSerializer) {
+        if (customSerializer === errSerializer) return customSerializer;
+        return function wrapErrSerializer(err) {
+          return customSerializer(errSerializer(err));
+        };
+      },
+      wrapRequestSerializer: function wrapRequestSerializer(customSerializer) {
+        if (customSerializer === reqSerializers.reqSerializer) return customSerializer;
+        return function wrappedReqSerializer(req) {
+          return customSerializer(reqSerializers.reqSerializer(req));
+        };
+      },
+      wrapResponseSerializer: function wrapResponseSerializer(customSerializer) {
+        if (customSerializer === resSerializers.resSerializer) return customSerializer;
+        return function wrappedResSerializer(res) {
+          return customSerializer(resSerializers.resSerializer(res));
+        };
+      }
+    };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/caller.js
+var require_caller = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/caller.js"(exports, module) {
+    "use strict";
+    function noOpPrepareStackTrace(_, stack) {
+      return stack;
+    }
+    module.exports = function getCallers() {
+      const originalPrepare = Error.prepareStackTrace;
+      Error.prepareStackTrace = noOpPrepareStackTrace;
+      const stack = new Error().stack;
+      Error.prepareStackTrace = originalPrepare;
+      if (!Array.isArray(stack)) {
+        return void 0;
+      }
+      const entries = stack.slice(2);
+      const fileNames = [];
+      for (const entry of entries) {
+        if (!entry) {
+          continue;
+        }
+        fileNames.push(entry.getFileName());
+      }
+      return fileNames;
+    };
+  }
+});
+
+// node_modules/.pnpm/@pinojs+redact@0.4.0/node_modules/@pinojs/redact/index.js
+var require_redact = __commonJS({
+  "node_modules/.pnpm/@pinojs+redact@0.4.0/node_modules/@pinojs/redact/index.js"(exports, module) {
+    "use strict";
+    function deepClone(obj) {
+      if (obj === null || typeof obj !== "object") {
+        return obj;
+      }
+      if (obj instanceof Date) {
+        return new Date(obj.getTime());
+      }
+      if (obj instanceof Array) {
+        const cloned = [];
+        for (let i = 0; i < obj.length; i++) {
+          cloned[i] = deepClone(obj[i]);
+        }
+        return cloned;
+      }
+      if (typeof obj === "object") {
+        const cloned = Object.create(Object.getPrototypeOf(obj));
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            cloned[key] = deepClone(obj[key]);
+          }
+        }
+        return cloned;
+      }
+      return obj;
+    }
+    function parsePath(path3) {
+      const parts = [];
+      let current = "";
+      let inBrackets = false;
+      let inQuotes = false;
+      let quoteChar = "";
+      for (let i = 0; i < path3.length; i++) {
+        const char = path3[i];
+        if (!inBrackets && char === ".") {
+          if (current) {
+            parts.push(current);
+            current = "";
+          }
+        } else if (char === "[") {
+          if (current) {
+            parts.push(current);
+            current = "";
+          }
+          inBrackets = true;
+        } else if (char === "]" && inBrackets) {
+          parts.push(current);
+          current = "";
+          inBrackets = false;
+          inQuotes = false;
+        } else if ((char === '"' || char === "'") && inBrackets) {
+          if (!inQuotes) {
+            inQuotes = true;
+            quoteChar = char;
+          } else if (char === quoteChar) {
+            inQuotes = false;
+            quoteChar = "";
+          } else {
+            current += char;
+          }
+        } else {
+          current += char;
+        }
+      }
+      if (current) {
+        parts.push(current);
+      }
+      return parts;
+    }
+    function setValue(obj, parts, value) {
+      let current = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const key = parts[i];
+        if (typeof current !== "object" || current === null || !(key in current)) {
+          return false;
+        }
+        if (typeof current[key] !== "object" || current[key] === null) {
+          return false;
+        }
+        current = current[key];
+      }
+      const lastKey = parts[parts.length - 1];
+      if (lastKey === "*") {
+        if (Array.isArray(current)) {
+          for (let i = 0; i < current.length; i++) {
+            current[i] = value;
+          }
+        } else if (typeof current === "object" && current !== null) {
+          for (const key in current) {
+            if (Object.prototype.hasOwnProperty.call(current, key)) {
+              current[key] = value;
+            }
+          }
+        }
+      } else {
+        if (typeof current === "object" && current !== null && lastKey in current && Object.prototype.hasOwnProperty.call(current, lastKey)) {
+          current[lastKey] = value;
+        }
+      }
+      return true;
+    }
+    function removeKey(obj, parts) {
+      let current = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const key = parts[i];
+        if (typeof current !== "object" || current === null || !(key in current)) {
+          return false;
+        }
+        if (typeof current[key] !== "object" || current[key] === null) {
+          return false;
+        }
+        current = current[key];
+      }
+      const lastKey = parts[parts.length - 1];
+      if (lastKey === "*") {
+        if (Array.isArray(current)) {
+          for (let i = 0; i < current.length; i++) {
+            current[i] = void 0;
+          }
+        } else if (typeof current === "object" && current !== null) {
+          for (const key in current) {
+            if (Object.prototype.hasOwnProperty.call(current, key)) {
+              delete current[key];
+            }
+          }
+        }
+      } else {
+        if (typeof current === "object" && current !== null && lastKey in current && Object.prototype.hasOwnProperty.call(current, lastKey)) {
+          delete current[lastKey];
+        }
+      }
+      return true;
+    }
+    var PATH_NOT_FOUND = /* @__PURE__ */ Symbol("PATH_NOT_FOUND");
+    function getValueIfExists(obj, parts) {
+      let current = obj;
+      for (const part of parts) {
+        if (current === null || current === void 0) {
+          return PATH_NOT_FOUND;
+        }
+        if (typeof current !== "object" || current === null) {
+          return PATH_NOT_FOUND;
+        }
+        if (!(part in current)) {
+          return PATH_NOT_FOUND;
+        }
+        current = current[part];
+      }
+      return current;
+    }
+    function getValue(obj, parts) {
+      let current = obj;
+      for (const part of parts) {
+        if (current === null || current === void 0) {
+          return void 0;
+        }
+        if (typeof current !== "object" || current === null) {
+          return void 0;
+        }
+        current = current[part];
+      }
+      return current;
+    }
+    function redactPaths(obj, paths, censor, remove = false) {
+      for (const path3 of paths) {
+        const parts = parsePath(path3);
+        if (parts.includes("*")) {
+          redactWildcardPath(obj, parts, censor, path3, remove);
+        } else {
+          if (remove) {
+            removeKey(obj, parts);
+          } else {
+            const value = getValueIfExists(obj, parts);
+            if (value === PATH_NOT_FOUND) {
+              continue;
+            }
+            const actualCensor = typeof censor === "function" ? censor(value, parts) : censor;
+            setValue(obj, parts, actualCensor);
+          }
+        }
+      }
+    }
+    function redactWildcardPath(obj, parts, censor, originalPath, remove = false) {
+      const wildcardIndex = parts.indexOf("*");
+      if (wildcardIndex === parts.length - 1) {
+        const parentParts = parts.slice(0, -1);
+        let current = obj;
+        for (const part of parentParts) {
+          if (current === null || current === void 0) return;
+          if (typeof current !== "object" || current === null) return;
+          current = current[part];
+        }
+        if (Array.isArray(current)) {
+          if (remove) {
+            for (let i = 0; i < current.length; i++) {
+              current[i] = void 0;
+            }
+          } else {
+            for (let i = 0; i < current.length; i++) {
+              const indexPath = [...parentParts, i.toString()];
+              const actualCensor = typeof censor === "function" ? censor(current[i], indexPath) : censor;
+              current[i] = actualCensor;
+            }
+          }
+        } else if (typeof current === "object" && current !== null) {
+          if (remove) {
+            const keysToDelete = [];
+            for (const key in current) {
+              if (Object.prototype.hasOwnProperty.call(current, key)) {
+                keysToDelete.push(key);
+              }
+            }
+            for (const key of keysToDelete) {
+              delete current[key];
+            }
+          } else {
+            for (const key in current) {
+              const keyPath = [...parentParts, key];
+              const actualCensor = typeof censor === "function" ? censor(current[key], keyPath) : censor;
+              current[key] = actualCensor;
+            }
+          }
+        }
+      } else {
+        redactIntermediateWildcard(obj, parts, censor, wildcardIndex, originalPath, remove);
+      }
+    }
+    function redactIntermediateWildcard(obj, parts, censor, wildcardIndex, originalPath, remove = false) {
+      const beforeWildcard = parts.slice(0, wildcardIndex);
+      const afterWildcard = parts.slice(wildcardIndex + 1);
+      const pathArray = [];
+      function traverse(current, pathLength) {
+        if (pathLength === beforeWildcard.length) {
+          if (Array.isArray(current)) {
+            for (let i = 0; i < current.length; i++) {
+              pathArray[pathLength] = i.toString();
+              traverse(current[i], pathLength + 1);
+            }
+          } else if (typeof current === "object" && current !== null) {
+            for (const key in current) {
+              pathArray[pathLength] = key;
+              traverse(current[key], pathLength + 1);
+            }
+          }
+        } else if (pathLength < beforeWildcard.length) {
+          const nextKey = beforeWildcard[pathLength];
+          if (current && typeof current === "object" && current !== null && nextKey in current) {
+            pathArray[pathLength] = nextKey;
+            traverse(current[nextKey], pathLength + 1);
+          }
+        } else {
+          if (afterWildcard.includes("*")) {
+            const wrappedCensor = typeof censor === "function" ? (value, path3) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path3];
+              return censor(value, fullPath);
+            } : censor;
+            redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
+          } else {
+            if (remove) {
+              removeKey(current, afterWildcard);
+            } else {
+              const actualCensor = typeof censor === "function" ? censor(getValue(current, afterWildcard), [...pathArray.slice(0, pathLength), ...afterWildcard]) : censor;
+              setValue(current, afterWildcard, actualCensor);
+            }
+          }
+        }
+      }
+      if (beforeWildcard.length === 0) {
+        traverse(obj, 0);
+      } else {
+        let current = obj;
+        for (let i = 0; i < beforeWildcard.length; i++) {
+          const part = beforeWildcard[i];
+          if (current === null || current === void 0) return;
+          if (typeof current !== "object" || current === null) return;
+          current = current[part];
+          pathArray[i] = part;
+        }
+        if (current !== null && current !== void 0) {
+          traverse(current, beforeWildcard.length);
+        }
+      }
+    }
+    function buildPathStructure(pathsToClone) {
+      if (pathsToClone.length === 0) {
+        return null;
+      }
+      const pathStructure = /* @__PURE__ */ new Map();
+      for (const path3 of pathsToClone) {
+        const parts = parsePath(path3);
+        let current = pathStructure;
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          if (!current.has(part)) {
+            current.set(part, /* @__PURE__ */ new Map());
+          }
+          current = current.get(part);
+        }
+      }
+      return pathStructure;
+    }
+    function selectiveClone(obj, pathStructure) {
+      if (!pathStructure) {
+        return obj;
+      }
+      function cloneSelectively(source, pathMap, depth = 0) {
+        if (!pathMap || pathMap.size === 0) {
+          return source;
+        }
+        if (source === null || typeof source !== "object") {
+          return source;
+        }
+        if (source instanceof Date) {
+          return new Date(source.getTime());
+        }
+        if (Array.isArray(source)) {
+          const cloned2 = [];
+          for (let i = 0; i < source.length; i++) {
+            const indexStr = i.toString();
+            if (pathMap.has(indexStr) || pathMap.has("*")) {
+              cloned2[i] = cloneSelectively(source[i], pathMap.get(indexStr) || pathMap.get("*"));
+            } else {
+              cloned2[i] = source[i];
+            }
+          }
+          return cloned2;
+        }
+        const cloned = Object.create(Object.getPrototypeOf(source));
+        for (const key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            if (pathMap.has(key) || pathMap.has("*")) {
+              cloned[key] = cloneSelectively(source[key], pathMap.get(key) || pathMap.get("*"));
+            } else {
+              cloned[key] = source[key];
+            }
+          }
+        }
+        return cloned;
+      }
+      return cloneSelectively(obj, pathStructure);
+    }
+    function validatePath(path3) {
+      if (typeof path3 !== "string") {
+        throw new Error("Paths must be (non-empty) strings");
+      }
+      if (path3 === "") {
+        throw new Error("Invalid redaction path ()");
+      }
+      if (path3.includes("..")) {
+        throw new Error(`Invalid redaction path (${path3})`);
+      }
+      if (path3.includes(",")) {
+        throw new Error(`Invalid redaction path (${path3})`);
+      }
+      let bracketCount = 0;
+      let inQuotes = false;
+      let quoteChar = "";
+      for (let i = 0; i < path3.length; i++) {
+        const char = path3[i];
+        if ((char === '"' || char === "'") && bracketCount > 0) {
+          if (!inQuotes) {
+            inQuotes = true;
+            quoteChar = char;
+          } else if (char === quoteChar) {
+            inQuotes = false;
+            quoteChar = "";
+          }
+        } else if (char === "[" && !inQuotes) {
+          bracketCount++;
+        } else if (char === "]" && !inQuotes) {
+          bracketCount--;
+          if (bracketCount < 0) {
+            throw new Error(`Invalid redaction path (${path3})`);
+          }
+        }
+      }
+      if (bracketCount !== 0) {
+        throw new Error(`Invalid redaction path (${path3})`);
+      }
+    }
+    function validatePaths(paths) {
+      if (!Array.isArray(paths)) {
+        throw new TypeError("paths must be an array");
+      }
+      for (const path3 of paths) {
+        validatePath(path3);
+      }
+    }
+    function slowRedact(options = {}) {
+      const {
+        paths = [],
+        censor = "[REDACTED]",
+        serialize = JSON.stringify,
+        strict = true,
+        remove = false
+      } = options;
+      validatePaths(paths);
+      const pathStructure = buildPathStructure(paths);
+      return function redact(obj) {
+        if (strict && (obj === null || typeof obj !== "object")) {
+          if (obj === null || obj === void 0) {
+            return serialize ? serialize(obj) : obj;
+          }
+          if (typeof obj !== "object") {
+            return serialize ? serialize(obj) : obj;
+          }
+        }
+        const cloned = selectiveClone(obj, pathStructure);
+        const original = obj;
+        let actualCensor = censor;
+        if (typeof censor === "function") {
+          actualCensor = censor;
+        }
+        redactPaths(cloned, paths, actualCensor, remove);
+        if (serialize === false) {
+          cloned.restore = function() {
+            return deepClone(original);
+          };
+          return cloned;
+        }
+        if (typeof serialize === "function") {
+          return serialize(cloned);
+        }
+        return JSON.stringify(cloned);
+      };
+    }
+    module.exports = slowRedact;
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/symbols.js
+var require_symbols = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/symbols.js"(exports, module) {
+    "use strict";
+    var setLevelSym = /* @__PURE__ */ Symbol("pino.setLevel");
+    var getLevelSym = /* @__PURE__ */ Symbol("pino.getLevel");
+    var levelValSym = /* @__PURE__ */ Symbol("pino.levelVal");
+    var levelCompSym = /* @__PURE__ */ Symbol("pino.levelComp");
+    var useLevelLabelsSym = /* @__PURE__ */ Symbol("pino.useLevelLabels");
+    var useOnlyCustomLevelsSym = /* @__PURE__ */ Symbol("pino.useOnlyCustomLevels");
+    var mixinSym = /* @__PURE__ */ Symbol("pino.mixin");
+    var lsCacheSym = /* @__PURE__ */ Symbol("pino.lsCache");
+    var chindingsSym = /* @__PURE__ */ Symbol("pino.chindings");
+    var asJsonSym = /* @__PURE__ */ Symbol("pino.asJson");
+    var writeSym = /* @__PURE__ */ Symbol("pino.write");
+    var redactFmtSym = /* @__PURE__ */ Symbol("pino.redactFmt");
+    var timeSym = /* @__PURE__ */ Symbol("pino.time");
+    var timeSliceIndexSym = /* @__PURE__ */ Symbol("pino.timeSliceIndex");
+    var streamSym = /* @__PURE__ */ Symbol("pino.stream");
+    var stringifySym = /* @__PURE__ */ Symbol("pino.stringify");
+    var stringifySafeSym = /* @__PURE__ */ Symbol("pino.stringifySafe");
+    var stringifiersSym = /* @__PURE__ */ Symbol("pino.stringifiers");
+    var endSym = /* @__PURE__ */ Symbol("pino.end");
+    var formatOptsSym = /* @__PURE__ */ Symbol("pino.formatOpts");
+    var messageKeySym = /* @__PURE__ */ Symbol("pino.messageKey");
+    var errorKeySym = /* @__PURE__ */ Symbol("pino.errorKey");
+    var nestedKeySym = /* @__PURE__ */ Symbol("pino.nestedKey");
+    var nestedKeyStrSym = /* @__PURE__ */ Symbol("pino.nestedKeyStr");
+    var mixinMergeStrategySym = /* @__PURE__ */ Symbol("pino.mixinMergeStrategy");
+    var msgPrefixSym = /* @__PURE__ */ Symbol("pino.msgPrefix");
+    var wildcardFirstSym = /* @__PURE__ */ Symbol("pino.wildcardFirst");
+    var serializersSym = /* @__PURE__ */ Symbol.for("pino.serializers");
+    var formattersSym = /* @__PURE__ */ Symbol.for("pino.formatters");
+    var hooksSym = /* @__PURE__ */ Symbol.for("pino.hooks");
+    var needsMetadataGsym = /* @__PURE__ */ Symbol.for("pino.metadata");
+    module.exports = {
+      setLevelSym,
+      getLevelSym,
+      levelValSym,
+      levelCompSym,
+      useLevelLabelsSym,
+      mixinSym,
+      lsCacheSym,
+      chindingsSym,
+      asJsonSym,
+      writeSym,
+      serializersSym,
+      redactFmtSym,
+      timeSym,
+      timeSliceIndexSym,
+      streamSym,
+      stringifySym,
+      stringifySafeSym,
+      stringifiersSym,
+      endSym,
+      formatOptsSym,
+      messageKeySym,
+      errorKeySym,
+      nestedKeySym,
+      wildcardFirstSym,
+      needsMetadataGsym,
+      useOnlyCustomLevelsSym,
+      formattersSym,
+      hooksSym,
+      nestedKeyStrSym,
+      mixinMergeStrategySym,
+      msgPrefixSym
+    };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/redaction.js
+var require_redaction = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/redaction.js"(exports, module) {
+    "use strict";
+    var Redact = require_redact();
+    var { redactFmtSym, wildcardFirstSym } = require_symbols();
+    var rx = /[^.[\]]+|\[([^[\]]*?)\]/g;
+    var CENSOR = "[Redacted]";
+    var strict = false;
+    function redaction(opts, serialize) {
+      const { paths, censor, remove } = handle(opts);
+      const shape = paths.reduce((o, str) => {
+        rx.lastIndex = 0;
+        const first = rx.exec(str);
+        const next = rx.exec(str);
+        let ns = first[1] !== void 0 ? first[1].replace(/^(?:"|'|`)(.*)(?:"|'|`)$/, "$1") : first[0];
+        if (ns === "*") {
+          ns = wildcardFirstSym;
+        }
+        if (next === null) {
+          o[ns] = null;
+          return o;
+        }
+        if (o[ns] === null) {
+          return o;
+        }
+        const { index } = next;
+        const nextPath = `${str.substr(index, str.length - 1)}`;
+        o[ns] = o[ns] || [];
+        if (ns !== wildcardFirstSym && o[ns].length === 0) {
+          o[ns].push(...o[wildcardFirstSym] || []);
+        }
+        if (ns === wildcardFirstSym) {
+          Object.keys(o).forEach(function(k) {
+            if (o[k]) {
+              o[k].push(nextPath);
+            }
+          });
+        }
+        o[ns].push(nextPath);
+        return o;
+      }, {});
+      const result = {
+        [redactFmtSym]: Redact({ paths, censor, serialize, strict, remove })
+      };
+      const topCensor = (...args) => {
+        return typeof censor === "function" ? serialize(censor(...args)) : serialize(censor);
+      };
+      return [...Object.keys(shape), ...Object.getOwnPropertySymbols(shape)].reduce((o, k) => {
+        if (shape[k] === null) {
+          o[k] = (value) => topCensor(value, [k]);
+        } else {
+          const wrappedCensor = typeof censor === "function" ? (value, path3) => {
+            return censor(value, [k, ...path3]);
+          } : censor;
+          o[k] = Redact({
+            paths: shape[k],
+            censor: wrappedCensor,
+            serialize,
+            strict,
+            remove
+          });
+        }
+        return o;
+      }, result);
+    }
+    function handle(opts) {
+      if (Array.isArray(opts)) {
+        opts = { paths: opts, censor: CENSOR };
+        return opts;
+      }
+      let { paths, censor = CENSOR, remove } = opts;
+      if (Array.isArray(paths) === false) {
+        throw Error("pino \u2013 redact must contain an array of strings");
+      }
+      if (remove === true) censor = void 0;
+      return { paths, censor, remove };
+    }
+    module.exports = redaction;
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/time.js
+var require_time = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/time.js"(exports, module) {
+    "use strict";
+    var nullTime = () => "";
+    var epochTime = () => `,"time":${Date.now()}`;
+    var unixTime = () => `,"time":${Math.round(Date.now() / 1e3)}`;
+    var isoTime = () => `,"time":"${new Date(Date.now()).toISOString()}"`;
+    var NS_PER_MS = 1000000n;
+    var NS_PER_SEC = 1000000000n;
+    var startWallTimeNs = BigInt(Date.now()) * NS_PER_MS;
+    var startHrTime = process.hrtime.bigint();
+    var isoTimeNano = () => {
+      const elapsedNs = process.hrtime.bigint() - startHrTime;
+      const currentTimeNs = startWallTimeNs + elapsedNs;
+      const secondsSinceEpoch = currentTimeNs / NS_PER_SEC;
+      const nanosWithinSecond = currentTimeNs % NS_PER_SEC;
+      const msSinceEpoch = Number(secondsSinceEpoch * 1000n + nanosWithinSecond / 1000000n);
+      const date = new Date(msSinceEpoch);
+      const year = date.getUTCFullYear();
+      const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+      const day = date.getUTCDate().toString().padStart(2, "0");
+      const hours = date.getUTCHours().toString().padStart(2, "0");
+      const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+      const seconds = date.getUTCSeconds().toString().padStart(2, "0");
+      return `,"time":"${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${nanosWithinSecond.toString().padStart(9, "0")}Z"`;
+    };
+    module.exports = { nullTime, epochTime, unixTime, isoTime, isoTimeNano };
+  }
+});
+
+// node_modules/.pnpm/quick-format-unescaped@4.0.4/node_modules/quick-format-unescaped/index.js
+var require_quick_format_unescaped = __commonJS({
+  "node_modules/.pnpm/quick-format-unescaped@4.0.4/node_modules/quick-format-unescaped/index.js"(exports, module) {
+    "use strict";
+    function tryStringify(o) {
+      try {
+        return JSON.stringify(o);
+      } catch (e) {
+        return '"[Circular]"';
+      }
+    }
+    module.exports = format;
+    function format(f, args, opts) {
+      var ss = opts && opts.stringify || tryStringify;
+      var offset = 1;
+      if (typeof f === "object" && f !== null) {
+        var len = args.length + offset;
+        if (len === 1) return f;
+        var objects = new Array(len);
+        objects[0] = ss(f);
+        for (var index = 1; index < len; index++) {
+          objects[index] = ss(args[index]);
+        }
+        return objects.join(" ");
+      }
+      if (typeof f !== "string") {
+        return f;
+      }
+      var argLen = args.length;
+      if (argLen === 0) return f;
+      var str = "";
+      var a = 1 - offset;
+      var lastPos = -1;
+      var flen = f && f.length || 0;
+      for (var i = 0; i < flen; ) {
+        if (f.charCodeAt(i) === 37 && i + 1 < flen) {
+          lastPos = lastPos > -1 ? lastPos : 0;
+          switch (f.charCodeAt(i + 1)) {
+            case 100:
+            // 'd'
+            case 102:
+              if (a >= argLen)
+                break;
+              if (args[a] == null) break;
+              if (lastPos < i)
+                str += f.slice(lastPos, i);
+              str += Number(args[a]);
+              lastPos = i + 2;
+              i++;
+              break;
+            case 105:
+              if (a >= argLen)
+                break;
+              if (args[a] == null) break;
+              if (lastPos < i)
+                str += f.slice(lastPos, i);
+              str += Math.floor(Number(args[a]));
+              lastPos = i + 2;
+              i++;
+              break;
+            case 79:
+            // 'O'
+            case 111:
+            // 'o'
+            case 106:
+              if (a >= argLen)
+                break;
+              if (args[a] === void 0) break;
+              if (lastPos < i)
+                str += f.slice(lastPos, i);
+              var type = typeof args[a];
+              if (type === "string") {
+                str += "'" + args[a] + "'";
+                lastPos = i + 2;
+                i++;
+                break;
+              }
+              if (type === "function") {
+                str += args[a].name || "<anonymous>";
+                lastPos = i + 2;
+                i++;
+                break;
+              }
+              str += ss(args[a]);
+              lastPos = i + 2;
+              i++;
+              break;
+            case 115:
+              if (a >= argLen)
+                break;
+              if (lastPos < i)
+                str += f.slice(lastPos, i);
+              str += String(args[a]);
+              lastPos = i + 2;
+              i++;
+              break;
+            case 37:
+              if (lastPos < i)
+                str += f.slice(lastPos, i);
+              str += "%";
+              lastPos = i + 2;
+              i++;
+              a--;
+              break;
+          }
+          ++a;
+        }
+        ++i;
+      }
+      if (lastPos === -1)
+        return f;
+      else if (lastPos < flen) {
+        str += f.slice(lastPos);
+      }
+      return str;
+    }
+  }
+});
+
+// node_modules/.pnpm/atomic-sleep@1.0.0/node_modules/atomic-sleep/index.js
+var require_atomic_sleep = __commonJS({
+  "node_modules/.pnpm/atomic-sleep@1.0.0/node_modules/atomic-sleep/index.js"(exports, module) {
+    "use strict";
+    if (typeof SharedArrayBuffer !== "undefined" && typeof Atomics !== "undefined") {
+      let sleep = function(ms) {
+        const valid = ms > 0 && ms < Infinity;
+        if (valid === false) {
+          if (typeof ms !== "number" && typeof ms !== "bigint") {
+            throw TypeError("sleep: ms must be a number");
+          }
+          throw RangeError("sleep: ms must be a number that is greater than 0 but less than Infinity");
+        }
+        Atomics.wait(nil, 0, 0, Number(ms));
+      };
+      const nil = new Int32Array(new SharedArrayBuffer(4));
+      module.exports = sleep;
+    } else {
+      let sleep = function(ms) {
+        const valid = ms > 0 && ms < Infinity;
+        if (valid === false) {
+          if (typeof ms !== "number" && typeof ms !== "bigint") {
+            throw TypeError("sleep: ms must be a number");
+          }
+          throw RangeError("sleep: ms must be a number that is greater than 0 but less than Infinity");
+        }
+        const target = Date.now() + Number(ms);
+        while (target > Date.now()) {
+        }
+      };
+      module.exports = sleep;
+    }
+  }
+});
+
+// node_modules/.pnpm/sonic-boom@4.2.1/node_modules/sonic-boom/index.js
+var require_sonic_boom = __commonJS({
+  "node_modules/.pnpm/sonic-boom@4.2.1/node_modules/sonic-boom/index.js"(exports, module) {
+    "use strict";
+    var fs3 = __require("fs");
+    var EventEmitter = __require("events");
+    var inherits = __require("util").inherits;
+    var path3 = __require("path");
+    var sleep = require_atomic_sleep();
+    var assert = __require("assert");
+    var BUSY_WRITE_TIMEOUT = 100;
+    var kEmptyBuffer = Buffer.allocUnsafe(0);
+    var MAX_WRITE = 16 * 1024;
+    var kContentModeBuffer = "buffer";
+    var kContentModeUtf8 = "utf8";
+    var [major, minor] = (process.versions.node || "0.0").split(".").map(Number);
+    var kCopyBuffer = major >= 22 && minor >= 7;
+    function openFile(file, sonic) {
+      sonic._opening = true;
+      sonic._writing = true;
+      sonic._asyncDrainScheduled = false;
+      function fileOpened(err, fd) {
+        if (err) {
+          sonic._reopening = false;
+          sonic._writing = false;
+          sonic._opening = false;
+          if (sonic.sync) {
+            process.nextTick(() => {
+              if (sonic.listenerCount("error") > 0) {
+                sonic.emit("error", err);
+              }
+            });
+          } else {
+            sonic.emit("error", err);
+          }
+          return;
+        }
+        const reopening = sonic._reopening;
+        sonic.fd = fd;
+        sonic.file = file;
+        sonic._reopening = false;
+        sonic._opening = false;
+        sonic._writing = false;
+        if (sonic.sync) {
+          process.nextTick(() => sonic.emit("ready"));
+        } else {
+          sonic.emit("ready");
+        }
+        if (sonic.destroyed) {
+          return;
+        }
+        if (!sonic._writing && sonic._len > sonic.minLength || sonic._flushPending) {
+          sonic._actualWrite();
+        } else if (reopening) {
+          process.nextTick(() => sonic.emit("drain"));
+        }
+      }
+      const flags = sonic.append ? "a" : "w";
+      const mode = sonic.mode;
+      if (sonic.sync) {
+        try {
+          if (sonic.mkdir) fs3.mkdirSync(path3.dirname(file), { recursive: true });
+          const fd = fs3.openSync(file, flags, mode);
+          fileOpened(null, fd);
+        } catch (err) {
+          fileOpened(err);
+          throw err;
+        }
+      } else if (sonic.mkdir) {
+        fs3.mkdir(path3.dirname(file), { recursive: true }, (err) => {
+          if (err) return fileOpened(err);
+          fs3.open(file, flags, mode, fileOpened);
+        });
+      } else {
+        fs3.open(file, flags, mode, fileOpened);
+      }
+    }
+    function SonicBoom(opts) {
+      if (!(this instanceof SonicBoom)) {
+        return new SonicBoom(opts);
+      }
+      let { fd, dest, minLength, maxLength, maxWrite, periodicFlush, sync, append = true, mkdir, retryEAGAIN, fsync, contentMode, mode } = opts || {};
+      fd = fd || dest;
+      this._len = 0;
+      this.fd = -1;
+      this._bufs = [];
+      this._lens = [];
+      this._writing = false;
+      this._ending = false;
+      this._reopening = false;
+      this._asyncDrainScheduled = false;
+      this._flushPending = false;
+      this._hwm = Math.max(minLength || 0, 16387);
+      this.file = null;
+      this.destroyed = false;
+      this.minLength = minLength || 0;
+      this.maxLength = maxLength || 0;
+      this.maxWrite = maxWrite || MAX_WRITE;
+      this._periodicFlush = periodicFlush || 0;
+      this._periodicFlushTimer = void 0;
+      this.sync = sync || false;
+      this.writable = true;
+      this._fsync = fsync || false;
+      this.append = append || false;
+      this.mode = mode;
+      this.retryEAGAIN = retryEAGAIN || (() => true);
+      this.mkdir = mkdir || false;
+      let fsWriteSync;
+      let fsWrite;
+      if (contentMode === kContentModeBuffer) {
+        this._writingBuf = kEmptyBuffer;
+        this.write = writeBuffer;
+        this.flush = flushBuffer;
+        this.flushSync = flushBufferSync;
+        this._actualWrite = actualWriteBuffer;
+        fsWriteSync = () => fs3.writeSync(this.fd, this._writingBuf);
+        fsWrite = () => fs3.write(this.fd, this._writingBuf, this.release);
+      } else if (contentMode === void 0 || contentMode === kContentModeUtf8) {
+        this._writingBuf = "";
+        this.write = write;
+        this.flush = flush;
+        this.flushSync = flushSync;
+        this._actualWrite = actualWrite;
+        fsWriteSync = () => {
+          if (Buffer.isBuffer(this._writingBuf)) {
+            return fs3.writeSync(this.fd, this._writingBuf);
+          }
+          return fs3.writeSync(this.fd, this._writingBuf, "utf8");
+        };
+        fsWrite = () => {
+          if (Buffer.isBuffer(this._writingBuf)) {
+            return fs3.write(this.fd, this._writingBuf, this.release);
+          }
+          return fs3.write(this.fd, this._writingBuf, "utf8", this.release);
+        };
+      } else {
+        throw new Error(`SonicBoom supports "${kContentModeUtf8}" and "${kContentModeBuffer}", but passed ${contentMode}`);
+      }
+      if (typeof fd === "number") {
+        this.fd = fd;
+        process.nextTick(() => this.emit("ready"));
+      } else if (typeof fd === "string") {
+        openFile(fd, this);
+      } else {
+        throw new Error("SonicBoom supports only file descriptors and files");
+      }
+      if (this.minLength >= this.maxWrite) {
+        throw new Error(`minLength should be smaller than maxWrite (${this.maxWrite})`);
+      }
+      this.release = (err, n) => {
+        if (err) {
+          if ((err.code === "EAGAIN" || err.code === "EBUSY") && this.retryEAGAIN(err, this._writingBuf.length, this._len - this._writingBuf.length)) {
+            if (this.sync) {
+              try {
+                sleep(BUSY_WRITE_TIMEOUT);
+                this.release(void 0, 0);
+              } catch (err2) {
+                this.release(err2);
+              }
+            } else {
+              setTimeout(fsWrite, BUSY_WRITE_TIMEOUT);
+            }
+          } else {
+            this._writing = false;
+            this.emit("error", err);
+          }
+          return;
+        }
+        this.emit("write", n);
+        const releasedBufObj = releaseWritingBuf(this._writingBuf, this._len, n);
+        this._len = releasedBufObj.len;
+        this._writingBuf = releasedBufObj.writingBuf;
+        if (this._writingBuf.length) {
+          if (!this.sync) {
+            fsWrite();
+            return;
+          }
+          try {
+            do {
+              const n2 = fsWriteSync();
+              const releasedBufObj2 = releaseWritingBuf(this._writingBuf, this._len, n2);
+              this._len = releasedBufObj2.len;
+              this._writingBuf = releasedBufObj2.writingBuf;
+            } while (this._writingBuf.length);
+          } catch (err2) {
+            this.release(err2);
+            return;
+          }
+        }
+        if (this._fsync) {
+          fs3.fsyncSync(this.fd);
+        }
+        const len = this._len;
+        if (this._reopening) {
+          this._writing = false;
+          this._reopening = false;
+          this.reopen();
+        } else if (len > this.minLength) {
+          this._actualWrite();
+        } else if (this._ending) {
+          if (len > 0) {
+            this._actualWrite();
+          } else {
+            this._writing = false;
+            actualClose(this);
+          }
+        } else {
+          this._writing = false;
+          if (this.sync) {
+            if (!this._asyncDrainScheduled) {
+              this._asyncDrainScheduled = true;
+              process.nextTick(emitDrain, this);
+            }
+          } else {
+            this.emit("drain");
+          }
+        }
+      };
+      this.on("newListener", function(name) {
+        if (name === "drain") {
+          this._asyncDrainScheduled = false;
+        }
+      });
+      if (this._periodicFlush !== 0) {
+        this._periodicFlushTimer = setInterval(() => this.flush(null), this._periodicFlush);
+        this._periodicFlushTimer.unref();
+      }
+    }
+    function releaseWritingBuf(writingBuf, len, n) {
+      if (typeof writingBuf === "string") {
+        writingBuf = Buffer.from(writingBuf);
+      }
+      len = Math.max(len - n, 0);
+      writingBuf = writingBuf.subarray(n);
+      return { writingBuf, len };
+    }
+    function emitDrain(sonic) {
+      const hasListeners = sonic.listenerCount("drain") > 0;
+      if (!hasListeners) return;
+      sonic._asyncDrainScheduled = false;
+      sonic.emit("drain");
+    }
+    inherits(SonicBoom, EventEmitter);
+    function mergeBuf(bufs, len) {
+      if (bufs.length === 0) {
+        return kEmptyBuffer;
+      }
+      if (bufs.length === 1) {
+        return bufs[0];
+      }
+      return Buffer.concat(bufs, len);
+    }
+    function write(data) {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      data = "" + data;
+      const dataLen = Buffer.byteLength(data);
+      const len = this._len + dataLen;
+      const bufs = this._bufs;
+      if (this.maxLength && len > this.maxLength) {
+        this.emit("drop", data);
+        return this._len < this._hwm;
+      }
+      if (bufs.length === 0 || Buffer.byteLength(bufs[bufs.length - 1]) + dataLen > this.maxWrite) {
+        bufs.push(data);
+      } else {
+        bufs[bufs.length - 1] += data;
+      }
+      this._len = len;
+      if (!this._writing && this._len >= this.minLength) {
+        this._actualWrite();
+      }
+      return this._len < this._hwm;
+    }
+    function writeBuffer(data) {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      const len = this._len + data.length;
+      const bufs = this._bufs;
+      const lens = this._lens;
+      if (this.maxLength && len > this.maxLength) {
+        this.emit("drop", data);
+        return this._len < this._hwm;
+      }
+      if (bufs.length === 0 || lens[lens.length - 1] + data.length > this.maxWrite) {
+        bufs.push([data]);
+        lens.push(data.length);
+      } else {
+        bufs[bufs.length - 1].push(data);
+        lens[lens.length - 1] += data.length;
+      }
+      this._len = len;
+      if (!this._writing && this._len >= this.minLength) {
+        this._actualWrite();
+      }
+      return this._len < this._hwm;
+    }
+    function callFlushCallbackOnDrain(cb) {
+      this._flushPending = true;
+      const onDrain = () => {
+        if (!this._fsync) {
+          try {
+            fs3.fsync(this.fd, (err) => {
+              this._flushPending = false;
+              cb(err);
+            });
+          } catch (err) {
+            cb(err);
+          }
+        } else {
+          this._flushPending = false;
+          cb();
+        }
+        this.off("error", onError);
+      };
+      const onError = (err) => {
+        this._flushPending = false;
+        cb(err);
+        this.off("drain", onDrain);
+      };
+      this.once("drain", onDrain);
+      this.once("error", onError);
+    }
+    function flush(cb) {
+      if (cb != null && typeof cb !== "function") {
+        throw new Error("flush cb must be a function");
+      }
+      if (this.destroyed) {
+        const error = new Error("SonicBoom destroyed");
+        if (cb) {
+          cb(error);
+          return;
+        }
+        throw error;
+      }
+      if (this.minLength <= 0) {
+        cb?.();
+        return;
+      }
+      if (cb) {
+        callFlushCallbackOnDrain.call(this, cb);
+      }
+      if (this._writing) {
+        return;
+      }
+      if (this._bufs.length === 0) {
+        this._bufs.push("");
+      }
+      this._actualWrite();
+    }
+    function flushBuffer(cb) {
+      if (cb != null && typeof cb !== "function") {
+        throw new Error("flush cb must be a function");
+      }
+      if (this.destroyed) {
+        const error = new Error("SonicBoom destroyed");
+        if (cb) {
+          cb(error);
+          return;
+        }
+        throw error;
+      }
+      if (this.minLength <= 0) {
+        cb?.();
+        return;
+      }
+      if (cb) {
+        callFlushCallbackOnDrain.call(this, cb);
+      }
+      if (this._writing) {
+        return;
+      }
+      if (this._bufs.length === 0) {
+        this._bufs.push([]);
+        this._lens.push(0);
+      }
+      this._actualWrite();
+    }
+    SonicBoom.prototype.reopen = function(file) {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      if (this._opening) {
+        this.once("ready", () => {
+          this.reopen(file);
+        });
+        return;
+      }
+      if (this._ending) {
+        return;
+      }
+      if (!this.file) {
+        throw new Error("Unable to reopen a file descriptor, you must pass a file to SonicBoom");
+      }
+      if (file) {
+        this.file = file;
+      }
+      this._reopening = true;
+      if (this._writing) {
+        return;
+      }
+      const fd = this.fd;
+      this.once("ready", () => {
+        if (fd !== this.fd) {
+          fs3.close(fd, (err) => {
+            if (err) {
+              return this.emit("error", err);
+            }
+          });
+        }
+      });
+      openFile(this.file, this);
+    };
+    SonicBoom.prototype.end = function() {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      if (this._opening) {
+        this.once("ready", () => {
+          this.end();
+        });
+        return;
+      }
+      if (this._ending) {
+        return;
+      }
+      this._ending = true;
+      if (this._writing) {
+        return;
+      }
+      if (this._len > 0 && this.fd >= 0) {
+        this._actualWrite();
+      } else {
+        actualClose(this);
+      }
+    };
+    function flushSync() {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      if (this.fd < 0) {
+        throw new Error("sonic boom is not ready yet");
+      }
+      if (!this._writing && this._writingBuf.length > 0) {
+        this._bufs.unshift(this._writingBuf);
+        this._writingBuf = "";
+      }
+      let buf = "";
+      while (this._bufs.length || buf.length) {
+        if (buf.length <= 0) {
+          buf = this._bufs[0];
+        }
+        try {
+          const n = Buffer.isBuffer(buf) ? fs3.writeSync(this.fd, buf) : fs3.writeSync(this.fd, buf, "utf8");
+          const releasedBufObj = releaseWritingBuf(buf, this._len, n);
+          buf = releasedBufObj.writingBuf;
+          this._len = releasedBufObj.len;
+          if (buf.length <= 0) {
+            this._bufs.shift();
+          }
+        } catch (err) {
+          const shouldRetry = err.code === "EAGAIN" || err.code === "EBUSY";
+          if (shouldRetry && !this.retryEAGAIN(err, buf.length, this._len - buf.length)) {
+            throw err;
+          }
+          sleep(BUSY_WRITE_TIMEOUT);
+        }
+      }
+      try {
+        fs3.fsyncSync(this.fd);
+      } catch {
+      }
+    }
+    function flushBufferSync() {
+      if (this.destroyed) {
+        throw new Error("SonicBoom destroyed");
+      }
+      if (this.fd < 0) {
+        throw new Error("sonic boom is not ready yet");
+      }
+      if (!this._writing && this._writingBuf.length > 0) {
+        this._bufs.unshift([this._writingBuf]);
+        this._writingBuf = kEmptyBuffer;
+      }
+      let buf = kEmptyBuffer;
+      while (this._bufs.length || buf.length) {
+        if (buf.length <= 0) {
+          buf = mergeBuf(this._bufs[0], this._lens[0]);
+        }
+        try {
+          const n = fs3.writeSync(this.fd, buf);
+          buf = buf.subarray(n);
+          this._len = Math.max(this._len - n, 0);
+          if (buf.length <= 0) {
+            this._bufs.shift();
+            this._lens.shift();
+          }
+        } catch (err) {
+          const shouldRetry = err.code === "EAGAIN" || err.code === "EBUSY";
+          if (shouldRetry && !this.retryEAGAIN(err, buf.length, this._len - buf.length)) {
+            throw err;
+          }
+          sleep(BUSY_WRITE_TIMEOUT);
+        }
+      }
+    }
+    SonicBoom.prototype.destroy = function() {
+      if (this.destroyed) {
+        return;
+      }
+      actualClose(this);
+    };
+    function actualWrite() {
+      const release = this.release;
+      this._writing = true;
+      this._writingBuf = this._writingBuf.length ? this._writingBuf : this._bufs.shift() || "";
+      if (this.sync) {
+        try {
+          const written = Buffer.isBuffer(this._writingBuf) ? fs3.writeSync(this.fd, this._writingBuf) : fs3.writeSync(this.fd, this._writingBuf, "utf8");
+          release(null, written);
+        } catch (err) {
+          release(err);
+        }
+      } else {
+        fs3.write(this.fd, this._writingBuf, release);
+      }
+    }
+    function actualWriteBuffer() {
+      const release = this.release;
+      this._writing = true;
+      this._writingBuf = this._writingBuf.length ? this._writingBuf : mergeBuf(this._bufs.shift(), this._lens.shift());
+      if (this.sync) {
+        try {
+          const written = fs3.writeSync(this.fd, this._writingBuf);
+          release(null, written);
+        } catch (err) {
+          release(err);
+        }
+      } else {
+        if (kCopyBuffer) {
+          this._writingBuf = Buffer.from(this._writingBuf);
+        }
+        fs3.write(this.fd, this._writingBuf, release);
+      }
+    }
+    function actualClose(sonic) {
+      if (sonic.fd === -1) {
+        sonic.once("ready", actualClose.bind(null, sonic));
+        return;
+      }
+      if (sonic._periodicFlushTimer !== void 0) {
+        clearInterval(sonic._periodicFlushTimer);
+      }
+      sonic.destroyed = true;
+      sonic._bufs = [];
+      sonic._lens = [];
+      assert(typeof sonic.fd === "number", `sonic.fd must be a number, got ${typeof sonic.fd}`);
+      try {
+        fs3.fsync(sonic.fd, closeWrapped);
+      } catch {
+      }
+      function closeWrapped() {
+        if (sonic.fd !== 1 && sonic.fd !== 2) {
+          fs3.close(sonic.fd, done);
+        } else {
+          done();
+        }
+      }
+      function done(err) {
+        if (err) {
+          sonic.emit("error", err);
+          return;
+        }
+        if (sonic._ending && !sonic._writing) {
+          sonic.emit("finish");
+        }
+        sonic.emit("close");
+      }
+    }
+    SonicBoom.SonicBoom = SonicBoom;
+    SonicBoom.default = SonicBoom;
+    module.exports = SonicBoom;
+  }
+});
+
+// node_modules/.pnpm/on-exit-leak-free@2.1.2/node_modules/on-exit-leak-free/index.js
+var require_on_exit_leak_free = __commonJS({
+  "node_modules/.pnpm/on-exit-leak-free@2.1.2/node_modules/on-exit-leak-free/index.js"(exports, module) {
+    "use strict";
+    var refs = {
+      exit: [],
+      beforeExit: []
+    };
+    var functions = {
+      exit: onExit,
+      beforeExit: onBeforeExit
+    };
+    var registry;
+    function ensureRegistry() {
+      if (registry === void 0) {
+        registry = new FinalizationRegistry(clear);
+      }
+    }
+    function install(event) {
+      if (refs[event].length > 0) {
+        return;
+      }
+      process.on(event, functions[event]);
+    }
+    function uninstall(event) {
+      if (refs[event].length > 0) {
+        return;
+      }
+      process.removeListener(event, functions[event]);
+      if (refs.exit.length === 0 && refs.beforeExit.length === 0) {
+        registry = void 0;
+      }
+    }
+    function onExit() {
+      callRefs("exit");
+    }
+    function onBeforeExit() {
+      callRefs("beforeExit");
+    }
+    function callRefs(event) {
+      for (const ref of refs[event]) {
+        const obj = ref.deref();
+        const fn = ref.fn;
+        if (obj !== void 0) {
+          fn(obj, event);
+        }
+      }
+      refs[event] = [];
+    }
+    function clear(ref) {
+      for (const event of ["exit", "beforeExit"]) {
+        const index = refs[event].indexOf(ref);
+        refs[event].splice(index, index + 1);
+        uninstall(event);
+      }
+    }
+    function _register(event, obj, fn) {
+      if (obj === void 0) {
+        throw new Error("the object can't be undefined");
+      }
+      install(event);
+      const ref = new WeakRef(obj);
+      ref.fn = fn;
+      ensureRegistry();
+      registry.register(obj, ref);
+      refs[event].push(ref);
+    }
+    function register(obj, fn) {
+      _register("exit", obj, fn);
+    }
+    function registerBeforeExit(obj, fn) {
+      _register("beforeExit", obj, fn);
+    }
+    function unregister(obj) {
+      if (registry === void 0) {
+        return;
+      }
+      registry.unregister(obj);
+      for (const event of ["exit", "beforeExit"]) {
+        refs[event] = refs[event].filter((ref) => {
+          const _obj = ref.deref();
+          return _obj && _obj !== obj;
+        });
+        uninstall(event);
+      }
+    }
+    module.exports = {
+      register,
+      registerBeforeExit,
+      unregister
+    };
+  }
+});
+
+// node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/package.json
+var require_package = __commonJS({
+  "node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/package.json"(exports, module) {
+    module.exports = {
+      name: "thread-stream",
+      version: "3.1.0",
+      description: "A streaming way to send data to a Node.js Worker Thread",
+      main: "index.js",
+      types: "index.d.ts",
+      dependencies: {
+        "real-require": "^0.2.0"
+      },
+      devDependencies: {
+        "@types/node": "^20.1.0",
+        "@types/tap": "^15.0.0",
+        "@yao-pkg/pkg": "^5.11.5",
+        desm: "^1.3.0",
+        fastbench: "^1.0.1",
+        husky: "^9.0.6",
+        "pino-elasticsearch": "^8.0.0",
+        "sonic-boom": "^4.0.1",
+        standard: "^17.0.0",
+        tap: "^16.2.0",
+        "ts-node": "^10.8.0",
+        typescript: "^5.3.2",
+        "why-is-node-running": "^2.2.2"
+      },
+      scripts: {
+        build: "tsc --noEmit",
+        test: 'standard && npm run build && npm run transpile && tap "test/**/*.test.*js" && tap --ts test/*.test.*ts',
+        "test:ci": "standard && npm run transpile && npm run test:ci:js && npm run test:ci:ts",
+        "test:ci:js": 'tap --no-check-coverage --timeout=120 --coverage-report=lcovonly "test/**/*.test.*js"',
+        "test:ci:ts": 'tap --ts --no-check-coverage --coverage-report=lcovonly "test/**/*.test.*ts"',
+        "test:yarn": 'npm run transpile && tap "test/**/*.test.js" --no-check-coverage',
+        transpile: "sh ./test/ts/transpile.sh",
+        prepare: "husky install"
+      },
+      standard: {
+        ignore: [
+          "test/ts/**/*",
+          "test/syntax-error.mjs"
+        ]
+      },
+      repository: {
+        type: "git",
+        url: "git+https://github.com/mcollina/thread-stream.git"
+      },
+      keywords: [
+        "worker",
+        "thread",
+        "threads",
+        "stream"
+      ],
+      author: "Matteo Collina <hello@matteocollina.com>",
+      license: "MIT",
+      bugs: {
+        url: "https://github.com/mcollina/thread-stream/issues"
+      },
+      homepage: "https://github.com/mcollina/thread-stream#readme"
+    };
+  }
+});
+
+// node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/lib/wait.js
+var require_wait = __commonJS({
+  "node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/lib/wait.js"(exports, module) {
+    "use strict";
+    var MAX_TIMEOUT = 1e3;
+    function wait(state, index, expected, timeout, done) {
+      const max = Date.now() + timeout;
+      let current = Atomics.load(state, index);
+      if (current === expected) {
+        done(null, "ok");
+        return;
+      }
+      let prior = current;
+      const check = (backoff) => {
+        if (Date.now() > max) {
+          done(null, "timed-out");
+        } else {
+          setTimeout(() => {
+            prior = current;
+            current = Atomics.load(state, index);
+            if (current === prior) {
+              check(backoff >= MAX_TIMEOUT ? MAX_TIMEOUT : backoff * 2);
+            } else {
+              if (current === expected) done(null, "ok");
+              else done(null, "not-equal");
+            }
+          }, backoff);
+        }
+      };
+      check(1);
+    }
+    function waitDiff(state, index, expected, timeout, done) {
+      const max = Date.now() + timeout;
+      let current = Atomics.load(state, index);
+      if (current !== expected) {
+        done(null, "ok");
+        return;
+      }
+      const check = (backoff) => {
+        if (Date.now() > max) {
+          done(null, "timed-out");
+        } else {
+          setTimeout(() => {
+            current = Atomics.load(state, index);
+            if (current !== expected) {
+              done(null, "ok");
+            } else {
+              check(backoff >= MAX_TIMEOUT ? MAX_TIMEOUT : backoff * 2);
+            }
+          }, backoff);
+        }
+      };
+      check(1);
+    }
+    module.exports = { wait, waitDiff };
+  }
+});
+
+// node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/lib/indexes.js
+var require_indexes = __commonJS({
+  "node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/lib/indexes.js"(exports, module) {
+    "use strict";
+    var WRITE_INDEX = 4;
+    var READ_INDEX = 8;
+    module.exports = {
+      WRITE_INDEX,
+      READ_INDEX
+    };
+  }
+});
+
+// node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/index.js
+var require_thread_stream = __commonJS({
+  "node_modules/.pnpm/thread-stream@3.1.0/node_modules/thread-stream/index.js"(exports, module) {
+    "use strict";
+    var { version } = require_package();
+    var { EventEmitter } = __require("events");
+    var { Worker } = __require("worker_threads");
+    var { join } = __require("path");
+    var { pathToFileURL } = __require("url");
+    var { wait } = require_wait();
+    var {
+      WRITE_INDEX,
+      READ_INDEX
+    } = require_indexes();
+    var buffer = __require("buffer");
+    var assert = __require("assert");
+    var kImpl = /* @__PURE__ */ Symbol("kImpl");
+    var MAX_STRING = buffer.constants.MAX_STRING_LENGTH;
+    var FakeWeakRef = class {
+      constructor(value) {
+        this._value = value;
+      }
+      deref() {
+        return this._value;
+      }
+    };
+    var FakeFinalizationRegistry = class {
+      register() {
+      }
+      unregister() {
+      }
+    };
+    var FinalizationRegistry2 = process.env.NODE_V8_COVERAGE ? FakeFinalizationRegistry : global.FinalizationRegistry || FakeFinalizationRegistry;
+    var WeakRef2 = process.env.NODE_V8_COVERAGE ? FakeWeakRef : global.WeakRef || FakeWeakRef;
+    var registry = new FinalizationRegistry2((worker) => {
+      if (worker.exited) {
+        return;
+      }
+      worker.terminate();
+    });
+    function createWorker(stream, opts) {
+      const { filename, workerData } = opts;
+      const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join(__dirname, "lib", "worker.js");
+      const worker = new Worker(toExecute, {
+        ...opts.workerOpts,
+        trackUnmanagedFds: false,
+        workerData: {
+          filename: filename.indexOf("file://") === 0 ? filename : pathToFileURL(filename).href,
+          dataBuf: stream[kImpl].dataBuf,
+          stateBuf: stream[kImpl].stateBuf,
+          workerData: {
+            $context: {
+              threadStreamVersion: version
+            },
+            ...workerData
+          }
+        }
+      });
+      worker.stream = new FakeWeakRef(stream);
+      worker.on("message", onWorkerMessage);
+      worker.on("exit", onWorkerExit);
+      registry.register(stream, worker);
+      return worker;
+    }
+    function drain(stream) {
+      assert(!stream[kImpl].sync);
+      if (stream[kImpl].needDrain) {
+        stream[kImpl].needDrain = false;
+        stream.emit("drain");
+      }
+    }
+    function nextFlush(stream) {
+      const writeIndex = Atomics.load(stream[kImpl].state, WRITE_INDEX);
+      let leftover = stream[kImpl].data.length - writeIndex;
+      if (leftover > 0) {
+        if (stream[kImpl].buf.length === 0) {
+          stream[kImpl].flushing = false;
+          if (stream[kImpl].ending) {
+            end(stream);
+          } else if (stream[kImpl].needDrain) {
+            process.nextTick(drain, stream);
+          }
+          return;
+        }
+        let toWrite = stream[kImpl].buf.slice(0, leftover);
+        let toWriteBytes = Buffer.byteLength(toWrite);
+        if (toWriteBytes <= leftover) {
+          stream[kImpl].buf = stream[kImpl].buf.slice(leftover);
+          write(stream, toWrite, nextFlush.bind(null, stream));
+        } else {
+          stream.flush(() => {
+            if (stream.destroyed) {
+              return;
+            }
+            Atomics.store(stream[kImpl].state, READ_INDEX, 0);
+            Atomics.store(stream[kImpl].state, WRITE_INDEX, 0);
+            while (toWriteBytes > stream[kImpl].data.length) {
+              leftover = leftover / 2;
+              toWrite = stream[kImpl].buf.slice(0, leftover);
+              toWriteBytes = Buffer.byteLength(toWrite);
+            }
+            stream[kImpl].buf = stream[kImpl].buf.slice(leftover);
+            write(stream, toWrite, nextFlush.bind(null, stream));
+          });
+        }
+      } else if (leftover === 0) {
+        if (writeIndex === 0 && stream[kImpl].buf.length === 0) {
+          return;
+        }
+        stream.flush(() => {
+          Atomics.store(stream[kImpl].state, READ_INDEX, 0);
+          Atomics.store(stream[kImpl].state, WRITE_INDEX, 0);
+          nextFlush(stream);
+        });
+      } else {
+        destroy(stream, new Error("overwritten"));
+      }
+    }
+    function onWorkerMessage(msg) {
+      const stream = this.stream.deref();
+      if (stream === void 0) {
+        this.exited = true;
+        this.terminate();
+        return;
+      }
+      switch (msg.code) {
+        case "READY":
+          this.stream = new WeakRef2(stream);
+          stream.flush(() => {
+            stream[kImpl].ready = true;
+            stream.emit("ready");
+          });
+          break;
+        case "ERROR":
+          destroy(stream, msg.err);
+          break;
+        case "EVENT":
+          if (Array.isArray(msg.args)) {
+            stream.emit(msg.name, ...msg.args);
+          } else {
+            stream.emit(msg.name, msg.args);
+          }
+          break;
+        case "WARNING":
+          process.emitWarning(msg.err);
+          break;
+        default:
+          destroy(stream, new Error("this should not happen: " + msg.code));
+      }
+    }
+    function onWorkerExit(code) {
+      const stream = this.stream.deref();
+      if (stream === void 0) {
+        return;
+      }
+      registry.unregister(stream);
+      stream.worker.exited = true;
+      stream.worker.off("exit", onWorkerExit);
+      destroy(stream, code !== 0 ? new Error("the worker thread exited") : null);
+    }
+    var ThreadStream = class extends EventEmitter {
+      constructor(opts = {}) {
+        super();
+        if (opts.bufferSize < 4) {
+          throw new Error("bufferSize must at least fit a 4-byte utf-8 char");
+        }
+        this[kImpl] = {};
+        this[kImpl].stateBuf = new SharedArrayBuffer(128);
+        this[kImpl].state = new Int32Array(this[kImpl].stateBuf);
+        this[kImpl].dataBuf = new SharedArrayBuffer(opts.bufferSize || 4 * 1024 * 1024);
+        this[kImpl].data = Buffer.from(this[kImpl].dataBuf);
+        this[kImpl].sync = opts.sync || false;
+        this[kImpl].ending = false;
+        this[kImpl].ended = false;
+        this[kImpl].needDrain = false;
+        this[kImpl].destroyed = false;
+        this[kImpl].flushing = false;
+        this[kImpl].ready = false;
+        this[kImpl].finished = false;
+        this[kImpl].errored = null;
+        this[kImpl].closed = false;
+        this[kImpl].buf = "";
+        this.worker = createWorker(this, opts);
+        this.on("message", (message, transferList) => {
+          this.worker.postMessage(message, transferList);
+        });
+      }
+      write(data) {
+        if (this[kImpl].destroyed) {
+          error(this, new Error("the worker has exited"));
+          return false;
+        }
+        if (this[kImpl].ending) {
+          error(this, new Error("the worker is ending"));
+          return false;
+        }
+        if (this[kImpl].flushing && this[kImpl].buf.length + data.length >= MAX_STRING) {
+          try {
+            writeSync(this);
+            this[kImpl].flushing = true;
+          } catch (err) {
+            destroy(this, err);
+            return false;
+          }
+        }
+        this[kImpl].buf += data;
+        if (this[kImpl].sync) {
+          try {
+            writeSync(this);
+            return true;
+          } catch (err) {
+            destroy(this, err);
+            return false;
+          }
+        }
+        if (!this[kImpl].flushing) {
+          this[kImpl].flushing = true;
+          setImmediate(nextFlush, this);
+        }
+        this[kImpl].needDrain = this[kImpl].data.length - this[kImpl].buf.length - Atomics.load(this[kImpl].state, WRITE_INDEX) <= 0;
+        return !this[kImpl].needDrain;
+      }
+      end() {
+        if (this[kImpl].destroyed) {
+          return;
+        }
+        this[kImpl].ending = true;
+        end(this);
+      }
+      flush(cb) {
+        if (this[kImpl].destroyed) {
+          if (typeof cb === "function") {
+            process.nextTick(cb, new Error("the worker has exited"));
+          }
+          return;
+        }
+        const writeIndex = Atomics.load(this[kImpl].state, WRITE_INDEX);
+        wait(this[kImpl].state, READ_INDEX, writeIndex, Infinity, (err, res) => {
+          if (err) {
+            destroy(this, err);
+            process.nextTick(cb, err);
+            return;
+          }
+          if (res === "not-equal") {
+            this.flush(cb);
+            return;
+          }
+          process.nextTick(cb);
+        });
+      }
+      flushSync() {
+        if (this[kImpl].destroyed) {
+          return;
+        }
+        writeSync(this);
+        flushSync(this);
+      }
+      unref() {
+        this.worker.unref();
+      }
+      ref() {
+        this.worker.ref();
+      }
+      get ready() {
+        return this[kImpl].ready;
+      }
+      get destroyed() {
+        return this[kImpl].destroyed;
+      }
+      get closed() {
+        return this[kImpl].closed;
+      }
+      get writable() {
+        return !this[kImpl].destroyed && !this[kImpl].ending;
+      }
+      get writableEnded() {
+        return this[kImpl].ending;
+      }
+      get writableFinished() {
+        return this[kImpl].finished;
+      }
+      get writableNeedDrain() {
+        return this[kImpl].needDrain;
+      }
+      get writableObjectMode() {
+        return false;
+      }
+      get writableErrored() {
+        return this[kImpl].errored;
+      }
+    };
+    function error(stream, err) {
+      setImmediate(() => {
+        stream.emit("error", err);
+      });
+    }
+    function destroy(stream, err) {
+      if (stream[kImpl].destroyed) {
+        return;
+      }
+      stream[kImpl].destroyed = true;
+      if (err) {
+        stream[kImpl].errored = err;
+        error(stream, err);
+      }
+      if (!stream.worker.exited) {
+        stream.worker.terminate().catch(() => {
+        }).then(() => {
+          stream[kImpl].closed = true;
+          stream.emit("close");
+        });
+      } else {
+        setImmediate(() => {
+          stream[kImpl].closed = true;
+          stream.emit("close");
+        });
+      }
+    }
+    function write(stream, data, cb) {
+      const current = Atomics.load(stream[kImpl].state, WRITE_INDEX);
+      const length = Buffer.byteLength(data);
+      stream[kImpl].data.write(data, current);
+      Atomics.store(stream[kImpl].state, WRITE_INDEX, current + length);
+      Atomics.notify(stream[kImpl].state, WRITE_INDEX);
+      cb();
+      return true;
+    }
+    function end(stream) {
+      if (stream[kImpl].ended || !stream[kImpl].ending || stream[kImpl].flushing) {
+        return;
+      }
+      stream[kImpl].ended = true;
+      try {
+        stream.flushSync();
+        let readIndex = Atomics.load(stream[kImpl].state, READ_INDEX);
+        Atomics.store(stream[kImpl].state, WRITE_INDEX, -1);
+        Atomics.notify(stream[kImpl].state, WRITE_INDEX);
+        let spins = 0;
+        while (readIndex !== -1) {
+          Atomics.wait(stream[kImpl].state, READ_INDEX, readIndex, 1e3);
+          readIndex = Atomics.load(stream[kImpl].state, READ_INDEX);
+          if (readIndex === -2) {
+            destroy(stream, new Error("end() failed"));
+            return;
+          }
+          if (++spins === 10) {
+            destroy(stream, new Error("end() took too long (10s)"));
+            return;
+          }
+        }
+        process.nextTick(() => {
+          stream[kImpl].finished = true;
+          stream.emit("finish");
+        });
+      } catch (err) {
+        destroy(stream, err);
+      }
+    }
+    function writeSync(stream) {
+      const cb = () => {
+        if (stream[kImpl].ending) {
+          end(stream);
+        } else if (stream[kImpl].needDrain) {
+          process.nextTick(drain, stream);
+        }
+      };
+      stream[kImpl].flushing = false;
+      while (stream[kImpl].buf.length !== 0) {
+        const writeIndex = Atomics.load(stream[kImpl].state, WRITE_INDEX);
+        let leftover = stream[kImpl].data.length - writeIndex;
+        if (leftover === 0) {
+          flushSync(stream);
+          Atomics.store(stream[kImpl].state, READ_INDEX, 0);
+          Atomics.store(stream[kImpl].state, WRITE_INDEX, 0);
+          continue;
+        } else if (leftover < 0) {
+          throw new Error("overwritten");
+        }
+        let toWrite = stream[kImpl].buf.slice(0, leftover);
+        let toWriteBytes = Buffer.byteLength(toWrite);
+        if (toWriteBytes <= leftover) {
+          stream[kImpl].buf = stream[kImpl].buf.slice(leftover);
+          write(stream, toWrite, cb);
+        } else {
+          flushSync(stream);
+          Atomics.store(stream[kImpl].state, READ_INDEX, 0);
+          Atomics.store(stream[kImpl].state, WRITE_INDEX, 0);
+          while (toWriteBytes > stream[kImpl].buf.length) {
+            leftover = leftover / 2;
+            toWrite = stream[kImpl].buf.slice(0, leftover);
+            toWriteBytes = Buffer.byteLength(toWrite);
+          }
+          stream[kImpl].buf = stream[kImpl].buf.slice(leftover);
+          write(stream, toWrite, cb);
+        }
+      }
+    }
+    function flushSync(stream) {
+      if (stream[kImpl].flushing) {
+        throw new Error("unable to flush while flushing");
+      }
+      const writeIndex = Atomics.load(stream[kImpl].state, WRITE_INDEX);
+      let spins = 0;
+      while (true) {
+        const readIndex = Atomics.load(stream[kImpl].state, READ_INDEX);
+        if (readIndex === -2) {
+          throw Error("_flushSync failed");
+        }
+        if (readIndex !== writeIndex) {
+          Atomics.wait(stream[kImpl].state, READ_INDEX, readIndex, 1e3);
+        } else {
+          break;
+        }
+        if (++spins === 10) {
+          throw new Error("_flushSync took too long (10s)");
+        }
+      }
+    }
+    module.exports = ThreadStream;
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/transport.js
+var require_transport = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/transport.js"(exports, module) {
+    "use strict";
+    var { createRequire } = __require("module");
+    var getCallers = require_caller();
+    var { join, isAbsolute, sep } = __require("node:path");
+    var sleep = require_atomic_sleep();
+    var onExit = require_on_exit_leak_free();
+    var ThreadStream = require_thread_stream();
+    function setupOnExit(stream) {
+      onExit.register(stream, autoEnd);
+      onExit.registerBeforeExit(stream, flush);
+      stream.on("close", function() {
+        onExit.unregister(stream);
+      });
+    }
+    function buildStream(filename, workerData, workerOpts, sync) {
+      const stream = new ThreadStream({
+        filename,
+        workerData,
+        workerOpts,
+        sync
+      });
+      stream.on("ready", onReady);
+      stream.on("close", function() {
+        process.removeListener("exit", onExit2);
+      });
+      process.on("exit", onExit2);
+      function onReady() {
+        process.removeListener("exit", onExit2);
+        stream.unref();
+        if (workerOpts.autoEnd !== false) {
+          setupOnExit(stream);
+        }
+      }
+      function onExit2() {
+        if (stream.closed) {
+          return;
+        }
+        stream.flushSync();
+        sleep(100);
+        stream.end();
+      }
+      return stream;
+    }
+    function autoEnd(stream) {
+      stream.ref();
+      stream.flushSync();
+      stream.end();
+      stream.once("close", function() {
+        stream.unref();
+      });
+    }
+    function flush(stream) {
+      stream.flushSync();
+    }
+    function transport(fullOptions) {
+      const { pipeline, targets, levels, dedupe, worker = {}, caller = getCallers(), sync = false } = fullOptions;
+      const options = {
+        ...fullOptions.options
+      };
+      const callers = typeof caller === "string" ? [caller] : caller;
+      const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
+      let target = fullOptions.target;
+      if (target && targets) {
+        throw new Error("only one of target or targets can be specified");
+      }
+      if (targets) {
+        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        options.targets = targets.filter((dest) => dest.target).map((dest) => {
+          return {
+            ...dest,
+            target: fixTarget(dest.target)
+          };
+        });
+        options.pipelines = targets.filter((dest) => dest.pipeline).map((dest) => {
+          return dest.pipeline.map((t) => {
+            return {
+              ...t,
+              level: dest.level,
+              // duplicate the pipeline `level` property defined in the upper level
+              target: fixTarget(t.target)
+            };
+          });
+        });
+      } else if (pipeline) {
+        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        options.pipelines = [pipeline.map((dest) => {
+          return {
+            ...dest,
+            target: fixTarget(dest.target)
+          };
+        })];
+      }
+      if (levels) {
+        options.levels = levels;
+      }
+      if (dedupe) {
+        options.dedupe = dedupe;
+      }
+      options.pinoWillSendConfig = true;
+      return buildStream(fixTarget(target), options, worker, sync);
+      function fixTarget(origin) {
+        origin = bundlerOverrides[origin] || origin;
+        if (isAbsolute(origin) || origin.indexOf("file://") === 0) {
+          return origin;
+        }
+        if (origin === "pino/file") {
+          return join(__dirname, "..", "file.js");
+        }
+        let fixTarget2;
+        for (const filePath of callers) {
+          try {
+            const context = filePath === "node:repl" ? process.cwd() + sep : filePath;
+            fixTarget2 = createRequire(context).resolve(origin);
+            break;
+          } catch (err) {
+            continue;
+          }
+        }
+        if (!fixTarget2) {
+          throw new Error(`unable to determine transport target for "${origin}"`);
+        }
+        return fixTarget2;
+      }
+    }
+    module.exports = transport;
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/tools.js
+var require_tools = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/tools.js"(exports, module) {
+    "use strict";
+    var diagChan = __require("node:diagnostics_channel");
+    var format = require_quick_format_unescaped();
+    var { mapHttpRequest, mapHttpResponse } = require_pino_std_serializers();
+    var SonicBoom = require_sonic_boom();
+    var onExit = require_on_exit_leak_free();
+    var {
+      lsCacheSym,
+      chindingsSym,
+      writeSym,
+      serializersSym,
+      formatOptsSym,
+      endSym,
+      stringifiersSym,
+      stringifySym,
+      stringifySafeSym,
+      wildcardFirstSym,
+      nestedKeySym,
+      formattersSym,
+      messageKeySym,
+      errorKeySym,
+      nestedKeyStrSym,
+      msgPrefixSym
+    } = require_symbols();
+    var { isMainThread } = __require("worker_threads");
+    var transport = require_transport();
+    var asJsonChan;
+    if (typeof diagChan.tracingChannel === "function") {
+      asJsonChan = diagChan.tracingChannel("pino_asJson");
+    } else {
+      asJsonChan = {
+        hasSubscribers: false,
+        traceSync(fn, store, thisArg, ...args) {
+          return fn.call(thisArg, ...args);
+        }
+      };
+    }
+    function noop() {
+    }
+    function genLog(level, hook) {
+      if (!hook) return LOG;
+      return function hookWrappedLog(...args) {
+        hook.call(this, args, LOG, level);
+      };
+      function LOG(o, ...n) {
+        if (typeof o === "object") {
+          let msg = o;
+          if (o !== null) {
+            if (o.method && o.headers && o.socket) {
+              o = mapHttpRequest(o);
+            } else if (typeof o.setHeader === "function") {
+              o = mapHttpResponse(o);
+            }
+          }
+          let formatParams;
+          if (msg === null && n.length === 0) {
+            formatParams = [null];
+          } else {
+            msg = n.shift();
+            formatParams = n;
+          }
+          if (typeof this[msgPrefixSym] === "string" && msg !== void 0 && msg !== null) {
+            msg = this[msgPrefixSym] + msg;
+          }
+          this[writeSym](o, format(msg, formatParams, this[formatOptsSym]), level);
+        } else {
+          let msg = o === void 0 ? n.shift() : o;
+          if (typeof this[msgPrefixSym] === "string" && msg !== void 0 && msg !== null) {
+            msg = this[msgPrefixSym] + msg;
+          }
+          this[writeSym](null, format(msg, n, this[formatOptsSym]), level);
+        }
+      }
+    }
+    function asString(str) {
+      let result = "";
+      let last = 0;
+      let found = false;
+      let point = 255;
+      const l = str.length;
+      if (l > 100) {
+        return JSON.stringify(str);
+      }
+      for (var i = 0; i < l && point >= 32; i++) {
+        point = str.charCodeAt(i);
+        if (point === 34 || point === 92) {
+          result += str.slice(last, i) + "\\";
+          last = i;
+          found = true;
+        }
+      }
+      if (!found) {
+        result = str;
+      } else {
+        result += str.slice(last);
+      }
+      return point < 32 ? JSON.stringify(str) : '"' + result + '"';
+    }
+    function asJson(obj, msg, num, time) {
+      if (asJsonChan.hasSubscribers === false) {
+        return _asJson.call(this, obj, msg, num, time);
+      }
+      const store = { instance: this, arguments };
+      return asJsonChan.traceSync(_asJson, store, this, obj, msg, num, time);
+    }
+    function _asJson(obj, msg, num, time) {
+      const stringify2 = this[stringifySym];
+      const stringifySafe = this[stringifySafeSym];
+      const stringifiers = this[stringifiersSym];
+      const end = this[endSym];
+      const chindings = this[chindingsSym];
+      const serializers = this[serializersSym];
+      const formatters = this[formattersSym];
+      const messageKey = this[messageKeySym];
+      const errorKey = this[errorKeySym];
+      let data = this[lsCacheSym][num] + time;
+      data = data + chindings;
+      let value;
+      if (formatters.log) {
+        obj = formatters.log(obj);
+      }
+      const wildcardStringifier = stringifiers[wildcardFirstSym];
+      let propStr = "";
+      for (const key in obj) {
+        value = obj[key];
+        if (Object.prototype.hasOwnProperty.call(obj, key) && value !== void 0) {
+          if (serializers[key]) {
+            value = serializers[key](value);
+          } else if (key === errorKey && serializers.err) {
+            value = serializers.err(value);
+          }
+          const stringifier = stringifiers[key] || wildcardStringifier;
+          switch (typeof value) {
+            case "undefined":
+            case "function":
+              continue;
+            case "number":
+              if (Number.isFinite(value) === false) {
+                value = null;
+              }
+            // this case explicitly falls through to the next one
+            case "boolean":
+              if (stringifier) value = stringifier(value);
+              break;
+            case "string":
+              value = (stringifier || asString)(value);
+              break;
+            default:
+              value = (stringifier || stringify2)(value, stringifySafe);
+          }
+          if (value === void 0) continue;
+          const strKey = asString(key);
+          propStr += "," + strKey + ":" + value;
+        }
+      }
+      let msgStr = "";
+      if (msg !== void 0) {
+        value = serializers[messageKey] ? serializers[messageKey](msg) : msg;
+        const stringifier = stringifiers[messageKey] || wildcardStringifier;
+        switch (typeof value) {
+          case "function":
+            break;
+          case "number":
+            if (Number.isFinite(value) === false) {
+              value = null;
+            }
+          // this case explicitly falls through to the next one
+          case "boolean":
+            if (stringifier) value = stringifier(value);
+            msgStr = ',"' + messageKey + '":' + value;
+            break;
+          case "string":
+            value = (stringifier || asString)(value);
+            msgStr = ',"' + messageKey + '":' + value;
+            break;
+          default:
+            value = (stringifier || stringify2)(value, stringifySafe);
+            msgStr = ',"' + messageKey + '":' + value;
+        }
+      }
+      if (this[nestedKeySym] && propStr) {
+        return data + this[nestedKeyStrSym] + propStr.slice(1) + "}" + msgStr + end;
+      } else {
+        return data + propStr + msgStr + end;
+      }
+    }
+    function asChindings(instance, bindings) {
+      let value;
+      let data = instance[chindingsSym];
+      const stringify2 = instance[stringifySym];
+      const stringifySafe = instance[stringifySafeSym];
+      const stringifiers = instance[stringifiersSym];
+      const wildcardStringifier = stringifiers[wildcardFirstSym];
+      const serializers = instance[serializersSym];
+      const formatter = instance[formattersSym].bindings;
+      bindings = formatter(bindings);
+      for (const key in bindings) {
+        value = bindings[key];
+        const valid = (key.length < 5 || key !== "level" && key !== "serializers" && key !== "formatters" && key !== "customLevels") && bindings.hasOwnProperty(key) && value !== void 0;
+        if (valid === true) {
+          value = serializers[key] ? serializers[key](value) : value;
+          value = (stringifiers[key] || wildcardStringifier || stringify2)(value, stringifySafe);
+          if (value === void 0) continue;
+          data += ',"' + key + '":' + value;
+        }
+      }
+      return data;
+    }
+    function hasBeenTampered(stream) {
+      return stream.write !== stream.constructor.prototype.write;
+    }
+    function buildSafeSonicBoom(opts) {
+      const stream = new SonicBoom(opts);
+      stream.on("error", filterBrokenPipe);
+      if (!opts.sync && isMainThread) {
+        onExit.register(stream, autoEnd);
+        stream.on("close", function() {
+          onExit.unregister(stream);
+        });
+      }
+      return stream;
+      function filterBrokenPipe(err) {
+        if (err.code === "EPIPE") {
+          stream.write = noop;
+          stream.end = noop;
+          stream.flushSync = noop;
+          stream.destroy = noop;
+          return;
+        }
+        stream.removeListener("error", filterBrokenPipe);
+        stream.emit("error", err);
+      }
+    }
+    function autoEnd(stream, eventName) {
+      if (stream.destroyed) {
+        return;
+      }
+      if (eventName === "beforeExit") {
+        stream.flush();
+        stream.on("drain", function() {
+          stream.end();
+        });
+      } else {
+        stream.flushSync();
+      }
+    }
+    function createArgsNormalizer(defaultOptions) {
+      return function normalizeArgs(instance, caller, opts = {}, stream) {
+        if (typeof opts === "string") {
+          stream = buildSafeSonicBoom({ dest: opts });
+          opts = {};
+        } else if (typeof stream === "string") {
+          if (opts && opts.transport) {
+            throw Error("only one of option.transport or stream can be specified");
+          }
+          stream = buildSafeSonicBoom({ dest: stream });
+        } else if (opts instanceof SonicBoom || opts.writable || opts._writableState) {
+          stream = opts;
+          opts = {};
+        } else if (opts.transport) {
+          if (opts.transport instanceof SonicBoom || opts.transport.writable || opts.transport._writableState) {
+            throw Error("option.transport do not allow stream, please pass to option directly. e.g. pino(transport)");
+          }
+          if (opts.transport.targets && opts.transport.targets.length && opts.formatters && typeof opts.formatters.level === "function") {
+            throw Error("option.transport.targets do not allow custom level formatters");
+          }
+          let customLevels;
+          if (opts.customLevels) {
+            customLevels = opts.useOnlyCustomLevels ? opts.customLevels : Object.assign({}, opts.levels, opts.customLevels);
+          }
+          stream = transport({ caller, ...opts.transport, levels: customLevels });
+        }
+        opts = Object.assign({}, defaultOptions, opts);
+        opts.serializers = Object.assign({}, defaultOptions.serializers, opts.serializers);
+        opts.formatters = Object.assign({}, defaultOptions.formatters, opts.formatters);
+        if (opts.prettyPrint) {
+          throw new Error("prettyPrint option is no longer supported, see the pino-pretty package (https://github.com/pinojs/pino-pretty)");
+        }
+        const { enabled, onChild } = opts;
+        if (enabled === false) opts.level = "silent";
+        if (!onChild) opts.onChild = noop;
+        if (!stream) {
+          if (!hasBeenTampered(process.stdout)) {
+            stream = buildSafeSonicBoom({ fd: process.stdout.fd || 1 });
+          } else {
+            stream = process.stdout;
+          }
+        }
+        return { opts, stream };
+      };
+    }
+    function stringify(obj, stringifySafeFn) {
+      try {
+        return JSON.stringify(obj);
+      } catch (_) {
+        try {
+          const stringify2 = stringifySafeFn || this[stringifySafeSym];
+          return stringify2(obj);
+        } catch (_2) {
+          return '"[unable to serialize, circular reference is too complex to analyze]"';
+        }
+      }
+    }
+    function buildFormatters(level, bindings, log) {
+      return {
+        level,
+        bindings,
+        log
+      };
+    }
+    function normalizeDestFileDescriptor(destination) {
+      const fd = Number(destination);
+      if (typeof destination === "string" && Number.isFinite(fd)) {
+        return fd;
+      }
+      if (destination === void 0) {
+        return 1;
+      }
+      return destination;
+    }
+    module.exports = {
+      noop,
+      buildSafeSonicBoom,
+      asChindings,
+      asJson,
+      genLog,
+      createArgsNormalizer,
+      stringify,
+      buildFormatters,
+      normalizeDestFileDescriptor
+    };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/constants.js
+var require_constants = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/constants.js"(exports, module) {
+    var DEFAULT_LEVELS = {
+      trace: 10,
+      debug: 20,
+      info: 30,
+      warn: 40,
+      error: 50,
+      fatal: 60
+    };
+    var SORTING_ORDER = {
+      ASC: "ASC",
+      DESC: "DESC"
+    };
+    module.exports = {
+      DEFAULT_LEVELS,
+      SORTING_ORDER
+    };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/levels.js
+var require_levels = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/levels.js"(exports, module) {
+    "use strict";
+    var {
+      lsCacheSym,
+      levelValSym,
+      useOnlyCustomLevelsSym,
+      streamSym,
+      formattersSym,
+      hooksSym,
+      levelCompSym
+    } = require_symbols();
+    var { noop, genLog } = require_tools();
+    var { DEFAULT_LEVELS, SORTING_ORDER } = require_constants();
+    var levelMethods = {
+      fatal: (hook) => {
+        const logFatal = genLog(DEFAULT_LEVELS.fatal, hook);
+        return function(...args) {
+          const stream = this[streamSym];
+          logFatal.call(this, ...args);
+          if (typeof stream.flushSync === "function") {
+            try {
+              stream.flushSync();
+            } catch (e) {
+            }
+          }
+        };
+      },
+      error: (hook) => genLog(DEFAULT_LEVELS.error, hook),
+      warn: (hook) => genLog(DEFAULT_LEVELS.warn, hook),
+      info: (hook) => genLog(DEFAULT_LEVELS.info, hook),
+      debug: (hook) => genLog(DEFAULT_LEVELS.debug, hook),
+      trace: (hook) => genLog(DEFAULT_LEVELS.trace, hook)
+    };
+    var nums = Object.keys(DEFAULT_LEVELS).reduce((o, k) => {
+      o[DEFAULT_LEVELS[k]] = k;
+      return o;
+    }, {});
+    var initialLsCache = Object.keys(nums).reduce((o, k) => {
+      o[k] = '{"level":' + Number(k);
+      return o;
+    }, {});
+    function genLsCache(instance) {
+      const formatter = instance[formattersSym].level;
+      const { labels } = instance.levels;
+      const cache = {};
+      for (const label in labels) {
+        const level = formatter(labels[label], Number(label));
+        cache[label] = JSON.stringify(level).slice(0, -1);
+      }
+      instance[lsCacheSym] = cache;
+      return instance;
+    }
+    function isStandardLevel(level, useOnlyCustomLevels) {
+      if (useOnlyCustomLevels) {
+        return false;
+      }
+      switch (level) {
+        case "fatal":
+        case "error":
+        case "warn":
+        case "info":
+        case "debug":
+        case "trace":
+          return true;
+        default:
+          return false;
+      }
+    }
+    function setLevel(level) {
+      const { labels, values } = this.levels;
+      if (typeof level === "number") {
+        if (labels[level] === void 0) throw Error("unknown level value" + level);
+        level = labels[level];
+      }
+      if (values[level] === void 0) throw Error("unknown level " + level);
+      const preLevelVal = this[levelValSym];
+      const levelVal = this[levelValSym] = values[level];
+      const useOnlyCustomLevelsVal = this[useOnlyCustomLevelsSym];
+      const levelComparison = this[levelCompSym];
+      const hook = this[hooksSym].logMethod;
+      for (const key in values) {
+        if (levelComparison(values[key], levelVal) === false) {
+          this[key] = noop;
+          continue;
+        }
+        this[key] = isStandardLevel(key, useOnlyCustomLevelsVal) ? levelMethods[key](hook) : genLog(values[key], hook);
+      }
+      this.emit(
+        "level-change",
+        level,
+        levelVal,
+        labels[preLevelVal],
+        preLevelVal,
+        this
+      );
+    }
+    function getLevel(level) {
+      const { levels, levelVal } = this;
+      return levels && levels.labels ? levels.labels[levelVal] : "";
+    }
+    function isLevelEnabled(logLevel) {
+      const { values } = this.levels;
+      const logLevelVal = values[logLevel];
+      return logLevelVal !== void 0 && this[levelCompSym](logLevelVal, this[levelValSym]);
+    }
+    function compareLevel(direction, current, expected) {
+      if (direction === SORTING_ORDER.DESC) {
+        return current <= expected;
+      }
+      return current >= expected;
+    }
+    function genLevelComparison(levelComparison) {
+      if (typeof levelComparison === "string") {
+        return compareLevel.bind(null, levelComparison);
+      }
+      return levelComparison;
+    }
+    function mappings(customLevels = null, useOnlyCustomLevels = false) {
+      const customNums = customLevels ? Object.keys(customLevels).reduce((o, k) => {
+        o[customLevels[k]] = k;
+        return o;
+      }, {}) : null;
+      const labels = Object.assign(
+        Object.create(Object.prototype, { Infinity: { value: "silent" } }),
+        useOnlyCustomLevels ? null : nums,
+        customNums
+      );
+      const values = Object.assign(
+        Object.create(Object.prototype, { silent: { value: Infinity } }),
+        useOnlyCustomLevels ? null : DEFAULT_LEVELS,
+        customLevels
+      );
+      return { labels, values };
+    }
+    function assertDefaultLevelFound(defaultLevel, customLevels, useOnlyCustomLevels) {
+      if (typeof defaultLevel === "number") {
+        const values = [].concat(
+          Object.keys(customLevels || {}).map((key) => customLevels[key]),
+          useOnlyCustomLevels ? [] : Object.keys(nums).map((level) => +level),
+          Infinity
+        );
+        if (!values.includes(defaultLevel)) {
+          throw Error(`default level:${defaultLevel} must be included in custom levels`);
+        }
+        return;
+      }
+      const labels = Object.assign(
+        Object.create(Object.prototype, { silent: { value: Infinity } }),
+        useOnlyCustomLevels ? null : DEFAULT_LEVELS,
+        customLevels
+      );
+      if (!(defaultLevel in labels)) {
+        throw Error(`default level:${defaultLevel} must be included in custom levels`);
+      }
+    }
+    function assertNoLevelCollisions(levels, customLevels) {
+      const { labels, values } = levels;
+      for (const k in customLevels) {
+        if (k in values) {
+          throw Error("levels cannot be overridden");
+        }
+        if (customLevels[k] in labels) {
+          throw Error("pre-existing level values cannot be used for new levels");
+        }
+      }
+    }
+    function assertLevelComparison(levelComparison) {
+      if (typeof levelComparison === "function") {
+        return;
+      }
+      if (typeof levelComparison === "string" && Object.values(SORTING_ORDER).includes(levelComparison)) {
+        return;
+      }
+      throw new Error('Levels comparison should be one of "ASC", "DESC" or "function" type');
+    }
+    module.exports = {
+      initialLsCache,
+      genLsCache,
+      levelMethods,
+      getLevel,
+      setLevel,
+      isLevelEnabled,
+      mappings,
+      assertNoLevelCollisions,
+      assertDefaultLevelFound,
+      genLevelComparison,
+      assertLevelComparison
+    };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/meta.js
+var require_meta = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/meta.js"(exports, module) {
+    "use strict";
+    module.exports = { version: "9.14.0" };
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/proto.js
+var require_proto = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/proto.js"(exports, module) {
+    "use strict";
+    var { EventEmitter } = __require("node:events");
+    var {
+      lsCacheSym,
+      levelValSym,
+      setLevelSym,
+      getLevelSym,
+      chindingsSym,
+      parsedChindingsSym,
+      mixinSym,
+      asJsonSym,
+      writeSym,
+      mixinMergeStrategySym,
+      timeSym,
+      timeSliceIndexSym,
+      streamSym,
+      serializersSym,
+      formattersSym,
+      errorKeySym,
+      messageKeySym,
+      useOnlyCustomLevelsSym,
+      needsMetadataGsym,
+      redactFmtSym,
+      stringifySym,
+      formatOptsSym,
+      stringifiersSym,
+      msgPrefixSym,
+      hooksSym
+    } = require_symbols();
+    var {
+      getLevel,
+      setLevel,
+      isLevelEnabled,
+      mappings,
+      initialLsCache,
+      genLsCache,
+      assertNoLevelCollisions
+    } = require_levels();
+    var {
+      asChindings,
+      asJson,
+      buildFormatters,
+      stringify,
+      noop
+    } = require_tools();
+    var {
+      version
+    } = require_meta();
+    var redaction = require_redaction();
+    var constructor = class Pino {
+    };
+    var prototype = {
+      constructor,
+      child,
+      bindings,
+      setBindings,
+      flush,
+      isLevelEnabled,
+      version,
+      get level() {
+        return this[getLevelSym]();
+      },
+      set level(lvl) {
+        this[setLevelSym](lvl);
+      },
+      get levelVal() {
+        return this[levelValSym];
+      },
+      set levelVal(n) {
+        throw Error("levelVal is read-only");
+      },
+      get msgPrefix() {
+        return this[msgPrefixSym];
+      },
+      get [Symbol.toStringTag]() {
+        return "Pino";
+      },
+      [lsCacheSym]: initialLsCache,
+      [writeSym]: write,
+      [asJsonSym]: asJson,
+      [getLevelSym]: getLevel,
+      [setLevelSym]: setLevel
+    };
+    Object.setPrototypeOf(prototype, EventEmitter.prototype);
+    module.exports = function() {
+      return Object.create(prototype);
+    };
+    var resetChildingsFormatter = (bindings2) => bindings2;
+    function child(bindings2, options) {
+      if (!bindings2) {
+        throw Error("missing bindings for child Pino");
+      }
+      const serializers = this[serializersSym];
+      const formatters = this[formattersSym];
+      const instance = Object.create(this);
+      if (options == null) {
+        if (instance[formattersSym].bindings !== resetChildingsFormatter) {
+          instance[formattersSym] = buildFormatters(
+            formatters.level,
+            resetChildingsFormatter,
+            formatters.log
+          );
+        }
+        instance[chindingsSym] = asChindings(instance, bindings2);
+        instance[setLevelSym](this.level);
+        if (this.onChild !== noop) {
+          this.onChild(instance);
+        }
+        return instance;
+      }
+      if (options.hasOwnProperty("serializers") === true) {
+        instance[serializersSym] = /* @__PURE__ */ Object.create(null);
+        for (const k in serializers) {
+          instance[serializersSym][k] = serializers[k];
+        }
+        const parentSymbols = Object.getOwnPropertySymbols(serializers);
+        for (var i = 0; i < parentSymbols.length; i++) {
+          const ks = parentSymbols[i];
+          instance[serializersSym][ks] = serializers[ks];
+        }
+        for (const bk in options.serializers) {
+          instance[serializersSym][bk] = options.serializers[bk];
+        }
+        const bindingsSymbols = Object.getOwnPropertySymbols(options.serializers);
+        for (var bi = 0; bi < bindingsSymbols.length; bi++) {
+          const bks = bindingsSymbols[bi];
+          instance[serializersSym][bks] = options.serializers[bks];
+        }
+      } else instance[serializersSym] = serializers;
+      if (options.hasOwnProperty("formatters")) {
+        const { level, bindings: chindings, log } = options.formatters;
+        instance[formattersSym] = buildFormatters(
+          level || formatters.level,
+          chindings || resetChildingsFormatter,
+          log || formatters.log
+        );
+      } else {
+        instance[formattersSym] = buildFormatters(
+          formatters.level,
+          resetChildingsFormatter,
+          formatters.log
+        );
+      }
+      if (options.hasOwnProperty("customLevels") === true) {
+        assertNoLevelCollisions(this.levels, options.customLevels);
+        instance.levels = mappings(options.customLevels, instance[useOnlyCustomLevelsSym]);
+        genLsCache(instance);
+      }
+      if (typeof options.redact === "object" && options.redact !== null || Array.isArray(options.redact)) {
+        instance.redact = options.redact;
+        const stringifiers = redaction(instance.redact, stringify);
+        const formatOpts = { stringify: stringifiers[redactFmtSym] };
+        instance[stringifySym] = stringify;
+        instance[stringifiersSym] = stringifiers;
+        instance[formatOptsSym] = formatOpts;
+      }
+      if (typeof options.msgPrefix === "string") {
+        instance[msgPrefixSym] = (this[msgPrefixSym] || "") + options.msgPrefix;
+      }
+      instance[chindingsSym] = asChindings(instance, bindings2);
+      const childLevel = options.level || this.level;
+      instance[setLevelSym](childLevel);
+      this.onChild(instance);
+      return instance;
+    }
+    function bindings() {
+      const chindings = this[chindingsSym];
+      const chindingsJson = `{${chindings.substr(1)}}`;
+      const bindingsFromJson = JSON.parse(chindingsJson);
+      delete bindingsFromJson.pid;
+      delete bindingsFromJson.hostname;
+      return bindingsFromJson;
+    }
+    function setBindings(newBindings) {
+      const chindings = asChindings(this, newBindings);
+      this[chindingsSym] = chindings;
+      delete this[parsedChindingsSym];
+    }
+    function defaultMixinMergeStrategy(mergeObject, mixinObject) {
+      return Object.assign(mixinObject, mergeObject);
+    }
+    function write(_obj, msg, num) {
+      const t = this[timeSym]();
+      const mixin = this[mixinSym];
+      const errorKey = this[errorKeySym];
+      const messageKey = this[messageKeySym];
+      const mixinMergeStrategy = this[mixinMergeStrategySym] || defaultMixinMergeStrategy;
+      let obj;
+      const streamWriteHook = this[hooksSym].streamWrite;
+      if (_obj === void 0 || _obj === null) {
+        obj = {};
+      } else if (_obj instanceof Error) {
+        obj = { [errorKey]: _obj };
+        if (msg === void 0) {
+          msg = _obj.message;
+        }
+      } else {
+        obj = _obj;
+        if (msg === void 0 && _obj[messageKey] === void 0 && _obj[errorKey]) {
+          msg = _obj[errorKey].message;
+        }
+      }
+      if (mixin) {
+        obj = mixinMergeStrategy(obj, mixin(obj, num, this));
+      }
+      const s = this[asJsonSym](obj, msg, num, t);
+      const stream = this[streamSym];
+      if (stream[needsMetadataGsym] === true) {
+        stream.lastLevel = num;
+        stream.lastObj = obj;
+        stream.lastMsg = msg;
+        stream.lastTime = t.slice(this[timeSliceIndexSym]);
+        stream.lastLogger = this;
+      }
+      stream.write(streamWriteHook ? streamWriteHook(s) : s);
+    }
+    function flush(cb) {
+      if (cb != null && typeof cb !== "function") {
+        throw Error("callback must be a function");
+      }
+      const stream = this[streamSym];
+      if (typeof stream.flush === "function") {
+        stream.flush(cb || noop);
+      } else if (cb) cb();
+    }
+  }
+});
+
+// node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify/index.js
+var require_safe_stable_stringify = __commonJS({
+  "node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify/index.js"(exports, module) {
+    "use strict";
+    var { hasOwnProperty } = Object.prototype;
+    var stringify = configure();
+    stringify.configure = configure;
+    stringify.stringify = stringify;
+    stringify.default = stringify;
+    exports.stringify = stringify;
+    exports.configure = configure;
+    module.exports = stringify;
+    var strEscapeSequencesRegExp = /[\u0000-\u001f\u0022\u005c\ud800-\udfff]/;
+    function strEscape(str) {
+      if (str.length < 5e3 && !strEscapeSequencesRegExp.test(str)) {
+        return `"${str}"`;
+      }
+      return JSON.stringify(str);
+    }
+    function sort(array, comparator) {
+      if (array.length > 200 || comparator) {
+        return array.sort(comparator);
+      }
+      for (let i = 1; i < array.length; i++) {
+        const currentValue = array[i];
+        let position = i;
+        while (position !== 0 && array[position - 1] > currentValue) {
+          array[position] = array[position - 1];
+          position--;
+        }
+        array[position] = currentValue;
+      }
+      return array;
+    }
+    var typedArrayPrototypeGetSymbolToStringTag = Object.getOwnPropertyDescriptor(
+      Object.getPrototypeOf(
+        Object.getPrototypeOf(
+          new Int8Array()
+        )
+      ),
+      Symbol.toStringTag
+    ).get;
+    function isTypedArrayWithEntries(value) {
+      return typedArrayPrototypeGetSymbolToStringTag.call(value) !== void 0 && value.length !== 0;
+    }
+    function stringifyTypedArray(array, separator, maximumBreadth) {
+      if (array.length < maximumBreadth) {
+        maximumBreadth = array.length;
+      }
+      const whitespace = separator === "," ? "" : " ";
+      let res = `"0":${whitespace}${array[0]}`;
+      for (let i = 1; i < maximumBreadth; i++) {
+        res += `${separator}"${i}":${whitespace}${array[i]}`;
+      }
+      return res;
+    }
+    function getCircularValueOption(options) {
+      if (hasOwnProperty.call(options, "circularValue")) {
+        const circularValue = options.circularValue;
+        if (typeof circularValue === "string") {
+          return `"${circularValue}"`;
+        }
+        if (circularValue == null) {
+          return circularValue;
+        }
+        if (circularValue === Error || circularValue === TypeError) {
+          return {
+            toString() {
+              throw new TypeError("Converting circular structure to JSON");
+            }
+          };
+        }
+        throw new TypeError('The "circularValue" argument must be of type string or the value null or undefined');
+      }
+      return '"[Circular]"';
+    }
+    function getDeterministicOption(options) {
+      let value;
+      if (hasOwnProperty.call(options, "deterministic")) {
+        value = options.deterministic;
+        if (typeof value !== "boolean" && typeof value !== "function") {
+          throw new TypeError('The "deterministic" argument must be of type boolean or comparator function');
+        }
+      }
+      return value === void 0 ? true : value;
+    }
+    function getBooleanOption(options, key) {
+      let value;
+      if (hasOwnProperty.call(options, key)) {
+        value = options[key];
+        if (typeof value !== "boolean") {
+          throw new TypeError(`The "${key}" argument must be of type boolean`);
+        }
+      }
+      return value === void 0 ? true : value;
+    }
+    function getPositiveIntegerOption(options, key) {
+      let value;
+      if (hasOwnProperty.call(options, key)) {
+        value = options[key];
+        if (typeof value !== "number") {
+          throw new TypeError(`The "${key}" argument must be of type number`);
+        }
+        if (!Number.isInteger(value)) {
+          throw new TypeError(`The "${key}" argument must be an integer`);
+        }
+        if (value < 1) {
+          throw new RangeError(`The "${key}" argument must be >= 1`);
+        }
+      }
+      return value === void 0 ? Infinity : value;
+    }
+    function getItemCount(number) {
+      if (number === 1) {
+        return "1 item";
+      }
+      return `${number} items`;
+    }
+    function getUniqueReplacerSet(replacerArray) {
+      const replacerSet = /* @__PURE__ */ new Set();
+      for (const value of replacerArray) {
+        if (typeof value === "string" || typeof value === "number") {
+          replacerSet.add(String(value));
+        }
+      }
+      return replacerSet;
+    }
+    function getStrictOption(options) {
+      if (hasOwnProperty.call(options, "strict")) {
+        const value = options.strict;
+        if (typeof value !== "boolean") {
+          throw new TypeError('The "strict" argument must be of type boolean');
+        }
+        if (value) {
+          return (value2) => {
+            let message = `Object can not safely be stringified. Received type ${typeof value2}`;
+            if (typeof value2 !== "function") message += ` (${value2.toString()})`;
+            throw new Error(message);
+          };
+        }
+      }
+    }
+    function configure(options) {
+      options = { ...options };
+      const fail = getStrictOption(options);
+      if (fail) {
+        if (options.bigint === void 0) {
+          options.bigint = false;
+        }
+        if (!("circularValue" in options)) {
+          options.circularValue = Error;
+        }
+      }
+      const circularValue = getCircularValueOption(options);
+      const bigint = getBooleanOption(options, "bigint");
+      const deterministic = getDeterministicOption(options);
+      const comparator = typeof deterministic === "function" ? deterministic : void 0;
+      const maximumDepth = getPositiveIntegerOption(options, "maximumDepth");
+      const maximumBreadth = getPositiveIntegerOption(options, "maximumBreadth");
+      function stringifyFnReplacer(key, parent, stack, replacer, spacer, indentation) {
+        let value = parent[key];
+        if (typeof value === "object" && value !== null && typeof value.toJSON === "function") {
+          value = value.toJSON(key);
+        }
+        value = replacer.call(parent, key, value);
+        switch (typeof value) {
+          case "string":
+            return strEscape(value);
+          case "object": {
+            if (value === null) {
+              return "null";
+            }
+            if (stack.indexOf(value) !== -1) {
+              return circularValue;
+            }
+            let res = "";
+            let join = ",";
+            const originalIndentation = indentation;
+            if (Array.isArray(value)) {
+              if (value.length === 0) {
+                return "[]";
+              }
+              if (maximumDepth < stack.length + 1) {
+                return '"[Array]"';
+              }
+              stack.push(value);
+              if (spacer !== "") {
+                indentation += spacer;
+                res += `
+${indentation}`;
+                join = `,
+${indentation}`;
+              }
+              const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
+              let i = 0;
+              for (; i < maximumValuesToStringify - 1; i++) {
+                const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
+                res += tmp2 !== void 0 ? tmp2 : "null";
+                res += join;
+              }
+              const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
+              res += tmp !== void 0 ? tmp : "null";
+              if (value.length - 1 > maximumBreadth) {
+                const removedKeys = value.length - maximumBreadth - 1;
+                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+              }
+              if (spacer !== "") {
+                res += `
+${originalIndentation}`;
+              }
+              stack.pop();
+              return `[${res}]`;
+            }
+            let keys = Object.keys(value);
+            const keyLength = keys.length;
+            if (keyLength === 0) {
+              return "{}";
+            }
+            if (maximumDepth < stack.length + 1) {
+              return '"[Object]"';
+            }
+            let whitespace = "";
+            let separator = "";
+            if (spacer !== "") {
+              indentation += spacer;
+              join = `,
+${indentation}`;
+              whitespace = " ";
+            }
+            const maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
+            if (deterministic && !isTypedArrayWithEntries(value)) {
+              keys = sort(keys, comparator);
+            }
+            stack.push(value);
+            for (let i = 0; i < maximumPropertiesToStringify; i++) {
+              const key2 = keys[i];
+              const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
+              if (tmp !== void 0) {
+                res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
+                separator = join;
+              }
+            }
+            if (keyLength > maximumBreadth) {
+              const removedKeys = keyLength - maximumBreadth;
+              res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
+              separator = join;
+            }
+            if (spacer !== "" && separator.length > 1) {
+              res = `
+${indentation}${res}
+${originalIndentation}`;
+            }
+            stack.pop();
+            return `{${res}}`;
+          }
+          case "number":
+            return isFinite(value) ? String(value) : fail ? fail(value) : "null";
+          case "boolean":
+            return value === true ? "true" : "false";
+          case "undefined":
+            return void 0;
+          case "bigint":
+            if (bigint) {
+              return String(value);
+            }
+          // fallthrough
+          default:
+            return fail ? fail(value) : void 0;
+        }
+      }
+      function stringifyArrayReplacer(key, value, stack, replacer, spacer, indentation) {
+        if (typeof value === "object" && value !== null && typeof value.toJSON === "function") {
+          value = value.toJSON(key);
+        }
+        switch (typeof value) {
+          case "string":
+            return strEscape(value);
+          case "object": {
+            if (value === null) {
+              return "null";
+            }
+            if (stack.indexOf(value) !== -1) {
+              return circularValue;
+            }
+            const originalIndentation = indentation;
+            let res = "";
+            let join = ",";
+            if (Array.isArray(value)) {
+              if (value.length === 0) {
+                return "[]";
+              }
+              if (maximumDepth < stack.length + 1) {
+                return '"[Array]"';
+              }
+              stack.push(value);
+              if (spacer !== "") {
+                indentation += spacer;
+                res += `
+${indentation}`;
+                join = `,
+${indentation}`;
+              }
+              const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
+              let i = 0;
+              for (; i < maximumValuesToStringify - 1; i++) {
+                const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
+                res += tmp2 !== void 0 ? tmp2 : "null";
+                res += join;
+              }
+              const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
+              res += tmp !== void 0 ? tmp : "null";
+              if (value.length - 1 > maximumBreadth) {
+                const removedKeys = value.length - maximumBreadth - 1;
+                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+              }
+              if (spacer !== "") {
+                res += `
+${originalIndentation}`;
+              }
+              stack.pop();
+              return `[${res}]`;
+            }
+            stack.push(value);
+            let whitespace = "";
+            if (spacer !== "") {
+              indentation += spacer;
+              join = `,
+${indentation}`;
+              whitespace = " ";
+            }
+            let separator = "";
+            for (const key2 of replacer) {
+              const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
+              if (tmp !== void 0) {
+                res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
+                separator = join;
+              }
+            }
+            if (spacer !== "" && separator.length > 1) {
+              res = `
+${indentation}${res}
+${originalIndentation}`;
+            }
+            stack.pop();
+            return `{${res}}`;
+          }
+          case "number":
+            return isFinite(value) ? String(value) : fail ? fail(value) : "null";
+          case "boolean":
+            return value === true ? "true" : "false";
+          case "undefined":
+            return void 0;
+          case "bigint":
+            if (bigint) {
+              return String(value);
+            }
+          // fallthrough
+          default:
+            return fail ? fail(value) : void 0;
+        }
+      }
+      function stringifyIndent(key, value, stack, spacer, indentation) {
+        switch (typeof value) {
+          case "string":
+            return strEscape(value);
+          case "object": {
+            if (value === null) {
+              return "null";
+            }
+            if (typeof value.toJSON === "function") {
+              value = value.toJSON(key);
+              if (typeof value !== "object") {
+                return stringifyIndent(key, value, stack, spacer, indentation);
+              }
+              if (value === null) {
+                return "null";
+              }
+            }
+            if (stack.indexOf(value) !== -1) {
+              return circularValue;
+            }
+            const originalIndentation = indentation;
+            if (Array.isArray(value)) {
+              if (value.length === 0) {
+                return "[]";
+              }
+              if (maximumDepth < stack.length + 1) {
+                return '"[Array]"';
+              }
+              stack.push(value);
+              indentation += spacer;
+              let res2 = `
+${indentation}`;
+              const join2 = `,
+${indentation}`;
+              const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
+              let i = 0;
+              for (; i < maximumValuesToStringify - 1; i++) {
+                const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
+                res2 += tmp2 !== void 0 ? tmp2 : "null";
+                res2 += join2;
+              }
+              const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
+              res2 += tmp !== void 0 ? tmp : "null";
+              if (value.length - 1 > maximumBreadth) {
+                const removedKeys = value.length - maximumBreadth - 1;
+                res2 += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
+              }
+              res2 += `
+${originalIndentation}`;
+              stack.pop();
+              return `[${res2}]`;
+            }
+            let keys = Object.keys(value);
+            const keyLength = keys.length;
+            if (keyLength === 0) {
+              return "{}";
+            }
+            if (maximumDepth < stack.length + 1) {
+              return '"[Object]"';
+            }
+            indentation += spacer;
+            const join = `,
+${indentation}`;
+            let res = "";
+            let separator = "";
+            let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
+            if (isTypedArrayWithEntries(value)) {
+              res += stringifyTypedArray(value, join, maximumBreadth);
+              keys = keys.slice(value.length);
+              maximumPropertiesToStringify -= value.length;
+              separator = join;
+            }
+            if (deterministic) {
+              keys = sort(keys, comparator);
+            }
+            stack.push(value);
+            for (let i = 0; i < maximumPropertiesToStringify; i++) {
+              const key2 = keys[i];
+              const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
+              if (tmp !== void 0) {
+                res += `${separator}${strEscape(key2)}: ${tmp}`;
+                separator = join;
+              }
+            }
+            if (keyLength > maximumBreadth) {
+              const removedKeys = keyLength - maximumBreadth;
+              res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
+              separator = join;
+            }
+            if (separator !== "") {
+              res = `
+${indentation}${res}
+${originalIndentation}`;
+            }
+            stack.pop();
+            return `{${res}}`;
+          }
+          case "number":
+            return isFinite(value) ? String(value) : fail ? fail(value) : "null";
+          case "boolean":
+            return value === true ? "true" : "false";
+          case "undefined":
+            return void 0;
+          case "bigint":
+            if (bigint) {
+              return String(value);
+            }
+          // fallthrough
+          default:
+            return fail ? fail(value) : void 0;
+        }
+      }
+      function stringifySimple(key, value, stack) {
+        switch (typeof value) {
+          case "string":
+            return strEscape(value);
+          case "object": {
+            if (value === null) {
+              return "null";
+            }
+            if (typeof value.toJSON === "function") {
+              value = value.toJSON(key);
+              if (typeof value !== "object") {
+                return stringifySimple(key, value, stack);
+              }
+              if (value === null) {
+                return "null";
+              }
+            }
+            if (stack.indexOf(value) !== -1) {
+              return circularValue;
+            }
+            let res = "";
+            const hasLength = value.length !== void 0;
+            if (hasLength && Array.isArray(value)) {
+              if (value.length === 0) {
+                return "[]";
+              }
+              if (maximumDepth < stack.length + 1) {
+                return '"[Array]"';
+              }
+              stack.push(value);
+              const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
+              let i = 0;
+              for (; i < maximumValuesToStringify - 1; i++) {
+                const tmp2 = stringifySimple(String(i), value[i], stack);
+                res += tmp2 !== void 0 ? tmp2 : "null";
+                res += ",";
+              }
+              const tmp = stringifySimple(String(i), value[i], stack);
+              res += tmp !== void 0 ? tmp : "null";
+              if (value.length - 1 > maximumBreadth) {
+                const removedKeys = value.length - maximumBreadth - 1;
+                res += `,"... ${getItemCount(removedKeys)} not stringified"`;
+              }
+              stack.pop();
+              return `[${res}]`;
+            }
+            let keys = Object.keys(value);
+            const keyLength = keys.length;
+            if (keyLength === 0) {
+              return "{}";
+            }
+            if (maximumDepth < stack.length + 1) {
+              return '"[Object]"';
+            }
+            let separator = "";
+            let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
+            if (hasLength && isTypedArrayWithEntries(value)) {
+              res += stringifyTypedArray(value, ",", maximumBreadth);
+              keys = keys.slice(value.length);
+              maximumPropertiesToStringify -= value.length;
+              separator = ",";
+            }
+            if (deterministic) {
+              keys = sort(keys, comparator);
+            }
+            stack.push(value);
+            for (let i = 0; i < maximumPropertiesToStringify; i++) {
+              const key2 = keys[i];
+              const tmp = stringifySimple(key2, value[key2], stack);
+              if (tmp !== void 0) {
+                res += `${separator}${strEscape(key2)}:${tmp}`;
+                separator = ",";
+              }
+            }
+            if (keyLength > maximumBreadth) {
+              const removedKeys = keyLength - maximumBreadth;
+              res += `${separator}"...":"${getItemCount(removedKeys)} not stringified"`;
+            }
+            stack.pop();
+            return `{${res}}`;
+          }
+          case "number":
+            return isFinite(value) ? String(value) : fail ? fail(value) : "null";
+          case "boolean":
+            return value === true ? "true" : "false";
+          case "undefined":
+            return void 0;
+          case "bigint":
+            if (bigint) {
+              return String(value);
+            }
+          // fallthrough
+          default:
+            return fail ? fail(value) : void 0;
+        }
+      }
+      function stringify2(value, replacer, space) {
+        if (arguments.length > 1) {
+          let spacer = "";
+          if (typeof space === "number") {
+            spacer = " ".repeat(Math.min(space, 10));
+          } else if (typeof space === "string") {
+            spacer = space.slice(0, 10);
+          }
+          if (replacer != null) {
+            if (typeof replacer === "function") {
+              return stringifyFnReplacer("", { "": value }, [], replacer, spacer, "");
+            }
+            if (Array.isArray(replacer)) {
+              return stringifyArrayReplacer("", value, [], getUniqueReplacerSet(replacer), spacer, "");
+            }
+          }
+          if (spacer.length !== 0) {
+            return stringifyIndent("", value, [], spacer, "");
+          }
+        }
+        return stringifySimple("", value, []);
+      }
+      return stringify2;
+    }
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/multistream.js
+var require_multistream = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/lib/multistream.js"(exports, module) {
+    "use strict";
+    var metadata = /* @__PURE__ */ Symbol.for("pino.metadata");
+    var { DEFAULT_LEVELS } = require_constants();
+    var DEFAULT_INFO_LEVEL = DEFAULT_LEVELS.info;
+    function multistream(streamsArray, opts) {
+      streamsArray = streamsArray || [];
+      opts = opts || { dedupe: false };
+      const streamLevels = Object.create(DEFAULT_LEVELS);
+      streamLevels.silent = Infinity;
+      if (opts.levels && typeof opts.levels === "object") {
+        Object.keys(opts.levels).forEach((i) => {
+          streamLevels[i] = opts.levels[i];
+        });
+      }
+      const res = {
+        write,
+        add,
+        remove,
+        emit,
+        flushSync,
+        end,
+        minLevel: 0,
+        lastId: 0,
+        streams: [],
+        clone,
+        [metadata]: true,
+        streamLevels
+      };
+      if (Array.isArray(streamsArray)) {
+        streamsArray.forEach(add, res);
+      } else {
+        add.call(res, streamsArray);
+      }
+      streamsArray = null;
+      return res;
+      function write(data) {
+        let dest;
+        const level = this.lastLevel;
+        const { streams } = this;
+        let recordedLevel = 0;
+        let stream;
+        for (let i = initLoopVar(streams.length, opts.dedupe); checkLoopVar(i, streams.length, opts.dedupe); i = adjustLoopVar(i, opts.dedupe)) {
+          dest = streams[i];
+          if (dest.level <= level) {
+            if (recordedLevel !== 0 && recordedLevel !== dest.level) {
+              break;
+            }
+            stream = dest.stream;
+            if (stream[metadata]) {
+              const { lastTime, lastMsg, lastObj, lastLogger } = this;
+              stream.lastLevel = level;
+              stream.lastTime = lastTime;
+              stream.lastMsg = lastMsg;
+              stream.lastObj = lastObj;
+              stream.lastLogger = lastLogger;
+            }
+            stream.write(data);
+            if (opts.dedupe) {
+              recordedLevel = dest.level;
+            }
+          } else if (!opts.dedupe) {
+            break;
+          }
+        }
+      }
+      function emit(...args) {
+        for (const { stream } of this.streams) {
+          if (typeof stream.emit === "function") {
+            stream.emit(...args);
+          }
+        }
+      }
+      function flushSync() {
+        for (const { stream } of this.streams) {
+          if (typeof stream.flushSync === "function") {
+            stream.flushSync();
+          }
+        }
+      }
+      function add(dest) {
+        if (!dest) {
+          return res;
+        }
+        const isStream = typeof dest.write === "function" || dest.stream;
+        const stream_ = dest.write ? dest : dest.stream;
+        if (!isStream) {
+          throw Error("stream object needs to implement either StreamEntry or DestinationStream interface");
+        }
+        const { streams, streamLevels: streamLevels2 } = this;
+        let level;
+        if (typeof dest.levelVal === "number") {
+          level = dest.levelVal;
+        } else if (typeof dest.level === "string") {
+          level = streamLevels2[dest.level];
+        } else if (typeof dest.level === "number") {
+          level = dest.level;
+        } else {
+          level = DEFAULT_INFO_LEVEL;
+        }
+        const dest_ = {
+          stream: stream_,
+          level,
+          levelVal: void 0,
+          id: ++res.lastId
+        };
+        streams.unshift(dest_);
+        streams.sort(compareByLevel);
+        this.minLevel = streams[0].level;
+        return res;
+      }
+      function remove(id) {
+        const { streams } = this;
+        const index = streams.findIndex((s) => s.id === id);
+        if (index >= 0) {
+          streams.splice(index, 1);
+          streams.sort(compareByLevel);
+          this.minLevel = streams.length > 0 ? streams[0].level : -1;
+        }
+        return res;
+      }
+      function end() {
+        for (const { stream } of this.streams) {
+          if (typeof stream.flushSync === "function") {
+            stream.flushSync();
+          }
+          stream.end();
+        }
+      }
+      function clone(level) {
+        const streams = new Array(this.streams.length);
+        for (let i = 0; i < streams.length; i++) {
+          streams[i] = {
+            level,
+            stream: this.streams[i].stream
+          };
+        }
+        return {
+          write,
+          add,
+          remove,
+          minLevel: level,
+          streams,
+          clone,
+          emit,
+          flushSync,
+          [metadata]: true
+        };
+      }
+    }
+    function compareByLevel(a, b) {
+      return a.level - b.level;
+    }
+    function initLoopVar(length, dedupe) {
+      return dedupe ? length - 1 : 0;
+    }
+    function adjustLoopVar(i, dedupe) {
+      return dedupe ? i - 1 : i + 1;
+    }
+    function checkLoopVar(i, length, dedupe) {
+      return dedupe ? i >= 0 : i < length;
+    }
+    module.exports = multistream;
+  }
+});
+
+// node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js
+var require_pino = __commonJS({
+  "node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js"(exports, module) {
+    function pinoBundlerAbsolutePath(p) {
+      try {
+        const path3 = __require("path");
+        const workingDir = process.cwd();
+        const outputDir = path3.resolve(workingDir, "artifacts/api-server/dist");
+        return path3.resolve(outputDir, p.replace(/^\.\//, ""));
+      } catch (e) {
+        const f = new Function("p", "return new URL(p, import.meta.url).pathname");
+        return f(p);
+      }
+    }
+    globalThis.__bundlerPathsOverrides = { ...globalThis.__bundlerPathsOverrides || {}, "thread-stream-worker": pinoBundlerAbsolutePath("./thread-stream-worker.mjs"), "pino-worker": pinoBundlerAbsolutePath("./pino-worker.mjs"), "pino/file": pinoBundlerAbsolutePath("./pino-file.mjs"), "pino-pretty": pinoBundlerAbsolutePath("./pino-pretty.mjs") };
+    var os2 = __require("node:os");
+    var stdSerializers = require_pino_std_serializers();
+    var caller = require_caller();
+    var redaction = require_redaction();
+    var time = require_time();
+    var proto = require_proto();
+    var symbols = require_symbols();
+    var { configure } = require_safe_stable_stringify();
+    var { assertDefaultLevelFound, mappings, genLsCache, genLevelComparison, assertLevelComparison } = require_levels();
+    var { DEFAULT_LEVELS, SORTING_ORDER } = require_constants();
+    var {
+      createArgsNormalizer,
+      asChindings,
+      buildSafeSonicBoom,
+      buildFormatters,
+      stringify,
+      normalizeDestFileDescriptor,
+      noop
+    } = require_tools();
+    var { version } = require_meta();
+    var {
+      chindingsSym,
+      redactFmtSym,
+      serializersSym,
+      timeSym,
+      timeSliceIndexSym,
+      streamSym,
+      stringifySym,
+      stringifySafeSym,
+      stringifiersSym,
+      setLevelSym,
+      endSym,
+      formatOptsSym,
+      messageKeySym,
+      errorKeySym,
+      nestedKeySym,
+      mixinSym,
+      levelCompSym,
+      useOnlyCustomLevelsSym,
+      formattersSym,
+      hooksSym,
+      nestedKeyStrSym,
+      mixinMergeStrategySym,
+      msgPrefixSym
+    } = symbols;
+    var { epochTime, nullTime } = time;
+    var { pid } = process;
+    var hostname = os2.hostname();
+    var defaultErrorSerializer = stdSerializers.err;
+    var defaultOptions = {
+      level: "info",
+      levelComparison: SORTING_ORDER.ASC,
+      levels: DEFAULT_LEVELS,
+      messageKey: "msg",
+      errorKey: "err",
+      nestedKey: null,
+      enabled: true,
+      base: { pid, hostname },
+      serializers: Object.assign(/* @__PURE__ */ Object.create(null), {
+        err: defaultErrorSerializer
+      }),
+      formatters: Object.assign(/* @__PURE__ */ Object.create(null), {
+        bindings(bindings) {
+          return bindings;
+        },
+        level(label, number) {
+          return { level: number };
+        }
+      }),
+      hooks: {
+        logMethod: void 0,
+        streamWrite: void 0
+      },
+      timestamp: epochTime,
+      name: void 0,
+      redact: null,
+      customLevels: null,
+      useOnlyCustomLevels: false,
+      depthLimit: 5,
+      edgeLimit: 100
+    };
+    var normalize = createArgsNormalizer(defaultOptions);
+    var serializers = Object.assign(/* @__PURE__ */ Object.create(null), stdSerializers);
+    function pino4(...args) {
+      const instance = {};
+      const { opts, stream } = normalize(instance, caller(), ...args);
+      if (opts.level && typeof opts.level === "string" && DEFAULT_LEVELS[opts.level.toLowerCase()] !== void 0) opts.level = opts.level.toLowerCase();
+      const {
+        redact,
+        crlf,
+        serializers: serializers2,
+        timestamp,
+        messageKey,
+        errorKey,
+        nestedKey,
+        base,
+        name,
+        level,
+        customLevels,
+        levelComparison,
+        mixin,
+        mixinMergeStrategy,
+        useOnlyCustomLevels,
+        formatters,
+        hooks,
+        depthLimit,
+        edgeLimit,
+        onChild,
+        msgPrefix
+      } = opts;
+      const stringifySafe = configure({
+        maximumDepth: depthLimit,
+        maximumBreadth: edgeLimit
+      });
+      const allFormatters = buildFormatters(
+        formatters.level,
+        formatters.bindings,
+        formatters.log
+      );
+      const stringifyFn = stringify.bind({
+        [stringifySafeSym]: stringifySafe
+      });
+      const stringifiers = redact ? redaction(redact, stringifyFn) : {};
+      const formatOpts = redact ? { stringify: stringifiers[redactFmtSym] } : { stringify: stringifyFn };
+      const end = "}" + (crlf ? "\r\n" : "\n");
+      const coreChindings = asChindings.bind(null, {
+        [chindingsSym]: "",
+        [serializersSym]: serializers2,
+        [stringifiersSym]: stringifiers,
+        [stringifySym]: stringify,
+        [stringifySafeSym]: stringifySafe,
+        [formattersSym]: allFormatters
+      });
+      let chindings = "";
+      if (base !== null) {
+        if (name === void 0) {
+          chindings = coreChindings(base);
+        } else {
+          chindings = coreChindings(Object.assign({}, base, { name }));
+        }
+      }
+      const time2 = timestamp instanceof Function ? timestamp : timestamp ? epochTime : nullTime;
+      const timeSliceIndex = time2().indexOf(":") + 1;
+      if (useOnlyCustomLevels && !customLevels) throw Error("customLevels is required if useOnlyCustomLevels is set true");
+      if (mixin && typeof mixin !== "function") throw Error(`Unknown mixin type "${typeof mixin}" - expected "function"`);
+      if (msgPrefix && typeof msgPrefix !== "string") throw Error(`Unknown msgPrefix type "${typeof msgPrefix}" - expected "string"`);
+      assertDefaultLevelFound(level, customLevels, useOnlyCustomLevels);
+      const levels = mappings(customLevels, useOnlyCustomLevels);
+      if (typeof stream.emit === "function") {
+        stream.emit("message", { code: "PINO_CONFIG", config: { levels, messageKey, errorKey } });
+      }
+      assertLevelComparison(levelComparison);
+      const levelCompFunc = genLevelComparison(levelComparison);
+      Object.assign(instance, {
+        levels,
+        [levelCompSym]: levelCompFunc,
+        [useOnlyCustomLevelsSym]: useOnlyCustomLevels,
+        [streamSym]: stream,
+        [timeSym]: time2,
+        [timeSliceIndexSym]: timeSliceIndex,
+        [stringifySym]: stringify,
+        [stringifySafeSym]: stringifySafe,
+        [stringifiersSym]: stringifiers,
+        [endSym]: end,
+        [formatOptsSym]: formatOpts,
+        [messageKeySym]: messageKey,
+        [errorKeySym]: errorKey,
+        [nestedKeySym]: nestedKey,
+        // protect against injection
+        [nestedKeyStrSym]: nestedKey ? `,${JSON.stringify(nestedKey)}:{` : "",
+        [serializersSym]: serializers2,
+        [mixinSym]: mixin,
+        [mixinMergeStrategySym]: mixinMergeStrategy,
+        [chindingsSym]: chindings,
+        [formattersSym]: allFormatters,
+        [hooksSym]: hooks,
+        silent: noop,
+        onChild,
+        [msgPrefixSym]: msgPrefix
+      });
+      Object.setPrototypeOf(instance, proto());
+      genLsCache(instance);
+      instance[setLevelSym](level);
+      return instance;
+    }
+    module.exports = pino4;
+    module.exports.destination = (dest = process.stdout.fd) => {
+      if (typeof dest === "object") {
+        dest.dest = normalizeDestFileDescriptor(dest.dest || process.stdout.fd);
+        return buildSafeSonicBoom(dest);
+      } else {
+        return buildSafeSonicBoom({ dest: normalizeDestFileDescriptor(dest), minLength: 0 });
+      }
+    };
+    module.exports.transport = require_transport();
+    module.exports.multistream = require_multistream();
+    module.exports.levels = mappings();
+    module.exports.stdSerializers = serializers;
+    module.exports.stdTimeFunctions = Object.assign({}, time);
+    module.exports.symbols = symbols;
+    module.exports.version = version;
+    module.exports.default = pino4;
+    module.exports.pino = pino4;
+  }
+});
+
+// node_modules/.pnpm/clone@2.1.2/node_modules/clone/clone.js
+var require_clone = __commonJS({
+  "node_modules/.pnpm/clone@2.1.2/node_modules/clone/clone.js"(exports, module) {
+    var clone = (function() {
+      "use strict";
+      function _instanceof(obj, type) {
+        return type != null && obj instanceof type;
+      }
+      var nativeMap;
+      try {
+        nativeMap = Map;
+      } catch (_) {
+        nativeMap = function() {
+        };
+      }
+      var nativeSet;
+      try {
+        nativeSet = Set;
+      } catch (_) {
+        nativeSet = function() {
+        };
+      }
+      var nativePromise;
+      try {
+        nativePromise = Promise;
+      } catch (_) {
+        nativePromise = function() {
+        };
+      }
+      function clone2(parent, circular, depth, prototype, includeNonEnumerable) {
+        if (typeof circular === "object") {
+          depth = circular.depth;
+          prototype = circular.prototype;
+          includeNonEnumerable = circular.includeNonEnumerable;
+          circular = circular.circular;
+        }
+        var allParents = [];
+        var allChildren = [];
+        var useBuffer = typeof Buffer != "undefined";
+        if (typeof circular == "undefined")
+          circular = true;
+        if (typeof depth == "undefined")
+          depth = Infinity;
+        function _clone(parent2, depth2) {
+          if (parent2 === null)
+            return null;
+          if (depth2 === 0)
+            return parent2;
+          var child;
+          var proto;
+          if (typeof parent2 != "object") {
+            return parent2;
+          }
+          if (_instanceof(parent2, nativeMap)) {
+            child = new nativeMap();
+          } else if (_instanceof(parent2, nativeSet)) {
+            child = new nativeSet();
+          } else if (_instanceof(parent2, nativePromise)) {
+            child = new nativePromise(function(resolve, reject) {
+              parent2.then(function(value) {
+                resolve(_clone(value, depth2 - 1));
+              }, function(err) {
+                reject(_clone(err, depth2 - 1));
+              });
+            });
+          } else if (clone2.__isArray(parent2)) {
+            child = [];
+          } else if (clone2.__isRegExp(parent2)) {
+            child = new RegExp(parent2.source, __getRegExpFlags(parent2));
+            if (parent2.lastIndex) child.lastIndex = parent2.lastIndex;
+          } else if (clone2.__isDate(parent2)) {
+            child = new Date(parent2.getTime());
+          } else if (useBuffer && Buffer.isBuffer(parent2)) {
+            if (Buffer.allocUnsafe) {
+              child = Buffer.allocUnsafe(parent2.length);
+            } else {
+              child = new Buffer(parent2.length);
+            }
+            parent2.copy(child);
+            return child;
+          } else if (_instanceof(parent2, Error)) {
+            child = Object.create(parent2);
+          } else {
+            if (typeof prototype == "undefined") {
+              proto = Object.getPrototypeOf(parent2);
+              child = Object.create(proto);
+            } else {
+              child = Object.create(prototype);
+              proto = prototype;
+            }
+          }
+          if (circular) {
+            var index = allParents.indexOf(parent2);
+            if (index != -1) {
+              return allChildren[index];
+            }
+            allParents.push(parent2);
+            allChildren.push(child);
+          }
+          if (_instanceof(parent2, nativeMap)) {
+            parent2.forEach(function(value, key) {
+              var keyChild = _clone(key, depth2 - 1);
+              var valueChild = _clone(value, depth2 - 1);
+              child.set(keyChild, valueChild);
+            });
+          }
+          if (_instanceof(parent2, nativeSet)) {
+            parent2.forEach(function(value) {
+              var entryChild = _clone(value, depth2 - 1);
+              child.add(entryChild);
+            });
+          }
+          for (var i in parent2) {
+            var attrs;
+            if (proto) {
+              attrs = Object.getOwnPropertyDescriptor(proto, i);
+            }
+            if (attrs && attrs.set == null) {
+              continue;
+            }
+            child[i] = _clone(parent2[i], depth2 - 1);
+          }
+          if (Object.getOwnPropertySymbols) {
+            var symbols = Object.getOwnPropertySymbols(parent2);
+            for (var i = 0; i < symbols.length; i++) {
+              var symbol = symbols[i];
+              var descriptor = Object.getOwnPropertyDescriptor(parent2, symbol);
+              if (descriptor && !descriptor.enumerable && !includeNonEnumerable) {
+                continue;
+              }
+              child[symbol] = _clone(parent2[symbol], depth2 - 1);
+              if (!descriptor.enumerable) {
+                Object.defineProperty(child, symbol, {
+                  enumerable: false
+                });
+              }
+            }
+          }
+          if (includeNonEnumerable) {
+            var allPropertyNames = Object.getOwnPropertyNames(parent2);
+            for (var i = 0; i < allPropertyNames.length; i++) {
+              var propertyName = allPropertyNames[i];
+              var descriptor = Object.getOwnPropertyDescriptor(parent2, propertyName);
+              if (descriptor && descriptor.enumerable) {
+                continue;
+              }
+              child[propertyName] = _clone(parent2[propertyName], depth2 - 1);
+              Object.defineProperty(child, propertyName, {
+                enumerable: false
+              });
+            }
+          }
+          return child;
+        }
+        return _clone(parent, depth);
+      }
+      clone2.clonePrototype = function clonePrototype(parent) {
+        if (parent === null)
+          return null;
+        var c = function() {
+        };
+        c.prototype = parent;
+        return new c();
+      };
+      function __objToStr(o) {
+        return Object.prototype.toString.call(o);
+      }
+      clone2.__objToStr = __objToStr;
+      function __isDate(o) {
+        return typeof o === "object" && __objToStr(o) === "[object Date]";
+      }
+      clone2.__isDate = __isDate;
+      function __isArray(o) {
+        return typeof o === "object" && __objToStr(o) === "[object Array]";
+      }
+      clone2.__isArray = __isArray;
+      function __isRegExp(o) {
+        return typeof o === "object" && __objToStr(o) === "[object RegExp]";
+      }
+      clone2.__isRegExp = __isRegExp;
+      function __getRegExpFlags(re) {
+        var flags = "";
+        if (re.global) flags += "g";
+        if (re.ignoreCase) flags += "i";
+        if (re.multiline) flags += "m";
+        return flags;
+      }
+      clone2.__getRegExpFlags = __getRegExpFlags;
+      return clone2;
+    })();
+    if (typeof module === "object" && module.exports) {
+      module.exports = clone;
+    }
+  }
+});
+
+// node_modules/.pnpm/node-cache@5.1.2/node_modules/node-cache/lib/node_cache.js
+var require_node_cache = __commonJS({
+  "node_modules/.pnpm/node-cache@5.1.2/node_modules/node-cache/lib/node_cache.js"(exports, module) {
+    (function() {
+      var EventEmitter, NodeCache, clone, splice = [].splice, boundMethodCheck = function(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+          throw new Error("Bound instance method accessed before binding");
+        }
+      }, indexOf = [].indexOf;
+      clone = require_clone();
+      EventEmitter = __require("events").EventEmitter;
+      module.exports = NodeCache = (function() {
+        class NodeCache2 extends EventEmitter {
+          constructor(options = {}) {
+            super();
+            this.get = this.get.bind(this);
+            this.mget = this.mget.bind(this);
+            this.set = this.set.bind(this);
+            this.mset = this.mset.bind(this);
+            this.del = this.del.bind(this);
+            this.take = this.take.bind(this);
+            this.ttl = this.ttl.bind(this);
+            this.getTtl = this.getTtl.bind(this);
+            this.keys = this.keys.bind(this);
+            this.has = this.has.bind(this);
+            this.getStats = this.getStats.bind(this);
+            this.flushAll = this.flushAll.bind(this);
+            this.flushStats = this.flushStats.bind(this);
+            this.close = this.close.bind(this);
+            this._checkData = this._checkData.bind(this);
+            this._check = this._check.bind(this);
+            this._isInvalidKey = this._isInvalidKey.bind(this);
+            this._wrap = this._wrap.bind(this);
+            this._getValLength = this._getValLength.bind(this);
+            this._error = this._error.bind(this);
+            this._initErrors = this._initErrors.bind(this);
+            this.options = options;
+            this._initErrors();
+            this.data = {};
+            this.options = Object.assign({
+              // convert all elements to string
+              forceString: false,
+              // used standard size for calculating value size
+              objectValueSize: 80,
+              promiseValueSize: 80,
+              arrayValueSize: 40,
+              // standard time to live in seconds. 0 = infinity;
+              stdTTL: 0,
+              // time in seconds to check all data and delete expired keys
+              checkperiod: 600,
+              // en/disable cloning of variables. If `true` you'll get a copy of the cached variable. If `false` you'll save and get just the reference
+              useClones: true,
+              // whether values should be deleted automatically at expiration
+              deleteOnExpire: true,
+              // enable legacy callbacks
+              enableLegacyCallbacks: false,
+              // max amount of keys that are being stored
+              maxKeys: -1
+            }, this.options);
+            if (this.options.enableLegacyCallbacks) {
+              console.warn("WARNING! node-cache legacy callback support will drop in v6.x");
+              ["get", "mget", "set", "del", "ttl", "getTtl", "keys", "has"].forEach((methodKey) => {
+                var oldMethod;
+                oldMethod = this[methodKey];
+                this[methodKey] = function(...args) {
+                  var cb, err, ref, res;
+                  ref = args, [...args] = ref, [cb] = splice.call(args, -1);
+                  if (typeof cb === "function") {
+                    try {
+                      res = oldMethod(...args);
+                      cb(null, res);
+                    } catch (error1) {
+                      err = error1;
+                      cb(err);
+                    }
+                  } else {
+                    return oldMethod(...args, cb);
+                  }
+                };
+              });
+            }
+            this.stats = {
+              hits: 0,
+              misses: 0,
+              keys: 0,
+              ksize: 0,
+              vsize: 0
+            };
+            this.validKeyTypes = ["string", "number"];
+            this._checkData();
+            return;
+          }
+          get(key) {
+            var _ret, err;
+            boundMethodCheck(this, NodeCache2);
+            if ((err = this._isInvalidKey(key)) != null) {
+              throw err;
+            }
+            if (this.data[key] != null && this._check(key, this.data[key])) {
+              this.stats.hits++;
+              _ret = this._unwrap(this.data[key]);
+              return _ret;
+            } else {
+              this.stats.misses++;
+              return void 0;
+            }
+          }
+          mget(keys) {
+            var _err, err, i, key, len, oRet;
+            boundMethodCheck(this, NodeCache2);
+            if (!Array.isArray(keys)) {
+              _err = this._error("EKEYSTYPE");
+              throw _err;
+            }
+            oRet = {};
+            for (i = 0, len = keys.length; i < len; i++) {
+              key = keys[i];
+              if ((err = this._isInvalidKey(key)) != null) {
+                throw err;
+              }
+              if (this.data[key] != null && this._check(key, this.data[key])) {
+                this.stats.hits++;
+                oRet[key] = this._unwrap(this.data[key]);
+              } else {
+                this.stats.misses++;
+              }
+            }
+            return oRet;
+          }
+          set(key, value, ttl) {
+            var _err, err, existent;
+            boundMethodCheck(this, NodeCache2);
+            if (this.options.maxKeys > -1 && this.stats.keys >= this.options.maxKeys) {
+              _err = this._error("ECACHEFULL");
+              throw _err;
+            }
+            if (this.options.forceString && false) {
+              value = JSON.stringify(value);
+            }
+            if (ttl == null) {
+              ttl = this.options.stdTTL;
+            }
+            if ((err = this._isInvalidKey(key)) != null) {
+              throw err;
+            }
+            existent = false;
+            if (this.data[key]) {
+              existent = true;
+              this.stats.vsize -= this._getValLength(this._unwrap(this.data[key], false));
+            }
+            this.data[key] = this._wrap(value, ttl);
+            this.stats.vsize += this._getValLength(value);
+            if (!existent) {
+              this.stats.ksize += this._getKeyLength(key);
+              this.stats.keys++;
+            }
+            this.emit("set", key, value);
+            return true;
+          }
+          mset(keyValueSet) {
+            var _err, err, i, j, key, keyValuePair, len, len1, ttl, val;
+            boundMethodCheck(this, NodeCache2);
+            if (this.options.maxKeys > -1 && this.stats.keys + keyValueSet.length >= this.options.maxKeys) {
+              _err = this._error("ECACHEFULL");
+              throw _err;
+            }
+            for (i = 0, len = keyValueSet.length; i < len; i++) {
+              keyValuePair = keyValueSet[i];
+              ({ key, val, ttl } = keyValuePair);
+              if (ttl && typeof ttl !== "number") {
+                _err = this._error("ETTLTYPE");
+                throw _err;
+              }
+              if ((err = this._isInvalidKey(key)) != null) {
+                throw err;
+              }
+            }
+            for (j = 0, len1 = keyValueSet.length; j < len1; j++) {
+              keyValuePair = keyValueSet[j];
+              ({ key, val, ttl } = keyValuePair);
+              this.set(key, val, ttl);
+            }
+            return true;
+          }
+          del(keys) {
+            var delCount, err, i, key, len, oldVal;
+            boundMethodCheck(this, NodeCache2);
+            if (!Array.isArray(keys)) {
+              keys = [keys];
+            }
+            delCount = 0;
+            for (i = 0, len = keys.length; i < len; i++) {
+              key = keys[i];
+              if ((err = this._isInvalidKey(key)) != null) {
+                throw err;
+              }
+              if (this.data[key] != null) {
+                this.stats.vsize -= this._getValLength(this._unwrap(this.data[key], false));
+                this.stats.ksize -= this._getKeyLength(key);
+                this.stats.keys--;
+                delCount++;
+                oldVal = this.data[key];
+                delete this.data[key];
+                this.emit("del", key, oldVal.v);
+              }
+            }
+            return delCount;
+          }
+          take(key) {
+            var _ret;
+            boundMethodCheck(this, NodeCache2);
+            _ret = this.get(key);
+            if (_ret != null) {
+              this.del(key);
+            }
+            return _ret;
+          }
+          ttl(key, ttl) {
+            var err;
+            boundMethodCheck(this, NodeCache2);
+            ttl || (ttl = this.options.stdTTL);
+            if (!key) {
+              return false;
+            }
+            if ((err = this._isInvalidKey(key)) != null) {
+              throw err;
+            }
+            if (this.data[key] != null && this._check(key, this.data[key])) {
+              if (ttl >= 0) {
+                this.data[key] = this._wrap(this.data[key].v, ttl, false);
+              } else {
+                this.del(key);
+              }
+              return true;
+            } else {
+              return false;
+            }
+          }
+          getTtl(key) {
+            var _ttl, err;
+            boundMethodCheck(this, NodeCache2);
+            if (!key) {
+              return void 0;
+            }
+            if ((err = this._isInvalidKey(key)) != null) {
+              throw err;
+            }
+            if (this.data[key] != null && this._check(key, this.data[key])) {
+              _ttl = this.data[key].t;
+              return _ttl;
+            } else {
+              return void 0;
+            }
+          }
+          keys() {
+            var _keys;
+            boundMethodCheck(this, NodeCache2);
+            _keys = Object.keys(this.data);
+            return _keys;
+          }
+          has(key) {
+            var _exists;
+            boundMethodCheck(this, NodeCache2);
+            _exists = this.data[key] != null && this._check(key, this.data[key]);
+            return _exists;
+          }
+          getStats() {
+            boundMethodCheck(this, NodeCache2);
+            return this.stats;
+          }
+          flushAll(_startPeriod = true) {
+            boundMethodCheck(this, NodeCache2);
+            this.data = {};
+            this.stats = {
+              hits: 0,
+              misses: 0,
+              keys: 0,
+              ksize: 0,
+              vsize: 0
+            };
+            this._killCheckPeriod();
+            this._checkData(_startPeriod);
+            this.emit("flush");
+          }
+          flushStats() {
+            boundMethodCheck(this, NodeCache2);
+            this.stats = {
+              hits: 0,
+              misses: 0,
+              keys: 0,
+              ksize: 0,
+              vsize: 0
+            };
+            this.emit("flush_stats");
+          }
+          close() {
+            boundMethodCheck(this, NodeCache2);
+            this._killCheckPeriod();
+          }
+          _checkData(startPeriod = true) {
+            var key, ref, value;
+            boundMethodCheck(this, NodeCache2);
+            ref = this.data;
+            for (key in ref) {
+              value = ref[key];
+              this._check(key, value);
+            }
+            if (startPeriod && this.options.checkperiod > 0) {
+              this.checkTimeout = setTimeout(this._checkData, this.options.checkperiod * 1e3, startPeriod);
+              if (this.checkTimeout != null && this.checkTimeout.unref != null) {
+                this.checkTimeout.unref();
+              }
+            }
+          }
+          // ## _killCheckPeriod
+          // stop the checkdata period. Only needed to abort the script in testing mode.
+          _killCheckPeriod() {
+            if (this.checkTimeout != null) {
+              return clearTimeout(this.checkTimeout);
+            }
+          }
+          _check(key, data) {
+            var _retval;
+            boundMethodCheck(this, NodeCache2);
+            _retval = true;
+            if (data.t !== 0 && data.t < Date.now()) {
+              if (this.options.deleteOnExpire) {
+                _retval = false;
+                this.del(key);
+              }
+              this.emit("expired", key, this._unwrap(data));
+            }
+            return _retval;
+          }
+          _isInvalidKey(key) {
+            var ref;
+            boundMethodCheck(this, NodeCache2);
+            if (ref = typeof key, indexOf.call(this.validKeyTypes, ref) < 0) {
+              return this._error("EKEYTYPE", {
+                type: typeof key
+              });
+            }
+          }
+          _wrap(value, ttl, asClone = true) {
+            var livetime, now, oReturn, ttlMultiplicator;
+            boundMethodCheck(this, NodeCache2);
+            if (!this.options.useClones) {
+              asClone = false;
+            }
+            now = Date.now();
+            livetime = 0;
+            ttlMultiplicator = 1e3;
+            if (ttl === 0) {
+              livetime = 0;
+            } else if (ttl) {
+              livetime = now + ttl * ttlMultiplicator;
+            } else {
+              if (this.options.stdTTL === 0) {
+                livetime = this.options.stdTTL;
+              } else {
+                livetime = now + this.options.stdTTL * ttlMultiplicator;
+              }
+            }
+            return oReturn = {
+              t: livetime,
+              v: asClone ? clone(value) : value
+            };
+          }
+          // ## _unwrap
+          // internal method to extract get the value out of the wrapped value
+          _unwrap(value, asClone = true) {
+            if (!this.options.useClones) {
+              asClone = false;
+            }
+            if (value.v != null) {
+              if (asClone) {
+                return clone(value.v);
+              } else {
+                return value.v;
+              }
+            }
+            return null;
+          }
+          // ## _getKeyLength
+          // internal method the calculate the key length
+          _getKeyLength(key) {
+            return key.toString().length;
+          }
+          _getValLength(value) {
+            boundMethodCheck(this, NodeCache2);
+            if (typeof value === "string") {
+              return value.length;
+            } else if (this.options.forceString) {
+              return JSON.stringify(value).length;
+            } else if (Array.isArray(value)) {
+              return this.options.arrayValueSize * value.length;
+            } else if (typeof value === "number") {
+              return 8;
+            } else if (typeof (value != null ? value.then : void 0) === "function") {
+              return this.options.promiseValueSize;
+            } else if (typeof Buffer !== "undefined" && Buffer !== null ? Buffer.isBuffer(value) : void 0) {
+              return value.length;
+            } else if (value != null && typeof value === "object") {
+              return this.options.objectValueSize * Object.keys(value).length;
+            } else if (typeof value === "boolean") {
+              return 8;
+            } else {
+              return 0;
+            }
+          }
+          _error(type, data = {}) {
+            var error;
+            boundMethodCheck(this, NodeCache2);
+            error = new Error();
+            error.name = type;
+            error.errorcode = type;
+            error.message = this.ERRORS[type] != null ? this.ERRORS[type](data) : "-";
+            error.data = data;
+            return error;
+          }
+          _initErrors() {
+            var _errMsg, _errT, ref;
+            boundMethodCheck(this, NodeCache2);
+            this.ERRORS = {};
+            ref = this._ERRORS;
+            for (_errT in ref) {
+              _errMsg = ref[_errT];
+              this.ERRORS[_errT] = this.createErrorMessage(_errMsg);
+            }
+          }
+          createErrorMessage(errMsg) {
+            return function(args) {
+              return errMsg.replace("__key", args.type);
+            };
+          }
+        }
+        ;
+        NodeCache2.prototype._ERRORS = {
+          "ENOTFOUND": "Key `__key` not found",
+          "ECACHEFULL": "Cache max keys amount exceeded",
+          "EKEYTYPE": "The key argument has to be of type `string` or `number`. Found: `__key`",
+          "EKEYSTYPE": "The keys argument has to be an array.",
+          "ETTLTYPE": "The ttl argument has to be a number."
+        };
+        return NodeCache2;
+      }).call(this);
+    }).call(exports);
+  }
+});
+
+// node_modules/.pnpm/node-cache@5.1.2/node_modules/node-cache/index.js
+var require_node_cache2 = __commonJS({
+  "node_modules/.pnpm/node-cache@5.1.2/node_modules/node-cache/index.js"(exports, module) {
+    (function() {
+      var exports2;
+      exports2 = module.exports = require_node_cache();
+      exports2.version = "5.1.2";
+    }).call(exports);
+  }
+});
+
+// artifacts/api-server/src/lib/logger.ts
+var import_pino = __toESM(require_pino(), 1);
+var isProduction = process.env.NODE_ENV === "production";
+var logger = (0, import_pino.default)({
+  level: process.env.LOG_LEVEL ?? "info",
+  redact: [
+    "req.headers.authorization",
+    "req.headers.cookie",
+    "res.headers['set-cookie']"
+  ],
+  ...isProduction ? {} : {
+    transport: {
+      target: "pino-pretty",
+      options: { colorize: true }
+    }
+  }
+});
+
+// artifacts/api-server/src/bot/botEngine.ts
+var import_pino3 = __toESM(require_pino(), 1);
+
+// artifacts/api-server/src/bot/session.ts
+import fs from "fs";
+import path from "path";
+import os from "os";
+import zlib from "zlib";
+import { promisify } from "util";
+var gzip = promisify(zlib.gzip);
+var gunzip = promisify(zlib.gunzip);
+var SESSION_PREFIX = "NUTTERX-MD::;";
+var SESSION_DIR = path.join(os.tmpdir(), "nutter-xmd-session");
+var activeBotSessionDir = null;
+function getActiveBotSessionDir() {
+  return activeBotSessionDir;
+}
+async function loadSessionFromEnv() {
+  const sessionId = process.env["SESSION_ID"];
+  if (!sessionId) {
+    logger.error("\u274C SESSION_ID not set.");
+    return null;
+  }
+  logger.info({ length: sessionId.length }, "\u{1F511} SESSION_ID found");
+  if (!sessionId.startsWith(SESSION_PREFIX)) {
+    logger.error({ expected: SESSION_PREFIX, got: sessionId.slice(0, 20) }, "\u274C Invalid SESSION_ID prefix \u2014 re-pair on the pairing page.");
+    return null;
+  }
+  const encoded = sessionId.slice(SESSION_PREFIX.length);
+  let fileMap;
+  try {
+    const raw = Buffer.from(encoded, "base64");
+    let jsonStr;
+    if (raw[0] === 31 && raw[1] === 139) {
+      jsonStr = (await gunzip(raw)).toString("utf-8");
+    } else {
+      jsonStr = raw.toString("utf-8");
+    }
+    fileMap = JSON.parse(jsonStr);
+  } catch (err) {
+    logger.error({ err }, "\u274C SESSION_ID corrupted \u2014 re-pair to get a new one.");
+    return null;
+  }
+  const fileKeys = Object.keys(fileMap);
+  const hasCreds = fileKeys.includes("creds.json");
+  logger.info(
+    {
+      totalFiles: fileKeys.length,
+      hasCreds,
+      preKeys: fileKeys.filter((f) => f.startsWith("pre-key-")).length,
+      sessions: fileKeys.filter((f) => f.startsWith("session-")).length,
+      senderKeys: fileKeys.filter((f) => f.startsWith("sender-key-")).length
+    },
+    "\u{1F4CB} SESSION_ID inventory"
+  );
+  if (!hasCreds) {
+    logger.error("\u274C creds.json missing \u2014 re-pair to get a valid SESSION_ID.");
+    return null;
+  }
+  const sessionDir = SESSION_DIR;
+  const isFirstBoot = !fs.existsSync(sessionDir);
+  if (isFirstBoot) {
+    fs.mkdirSync(sessionDir, { recursive: true });
+    logger.info({ sessionDir }, "\u{1F4C1} Fresh session directory created");
+  } else {
+    logger.info({ sessionDir, existingFiles: fs.readdirSync(sessionDir).length }, "\u{1F4C1} Reusing existing session directory");
+  }
+  let written = 0, skipped = 0;
+  for (const [filename, fileContent] of Object.entries(fileMap)) {
+    if (filename === "." || filename === ".." || path.basename(filename) !== filename) {
+      skipped++;
+      logger.warn({ filename }, "Skipping unsafe SESSION_ID filename");
+      continue;
+    }
+    const filePath = path.join(sessionDir, filename);
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify(fileContent), "utf-8");
+      written++;
+    } else {
+      skipped++;
+    }
+  }
+  logger.info(
+    {
+      written,
+      skipped,
+      sessionFilesInSnapshot: fileKeys.filter((f) => f.startsWith("session-") && f.endsWith(".json")).length
+    },
+    "\u{1F4DD} Baileys auth files restored from SESSION_ID"
+  );
+  let authState;
+  try {
+    const { useMultiFileAuthState } = await import("@whiskeysockets/baileys");
+    authState = await useMultiFileAuthState(sessionDir);
+  } catch (authErr) {
+    logger.error({ authErr }, "\u274C useMultiFileAuthState failed \u2014 re-pair to fix.");
+    return null;
+  }
+  activeBotSessionDir = sessionDir;
+  const allFiles = fs.readdirSync(sessionDir);
+  logger.info(
+    {
+      sessionDir,
+      totalOnDisk: allFiles.length,
+      hasCreds: allFiles.includes("creds.json"),
+      preKeys: allFiles.filter((f) => f.startsWith("pre-key-")).length,
+      sessions: allFiles.filter((f) => f.startsWith("session-")).length,
+      senderKeys: allFiles.filter((f) => f.startsWith("sender-key-") && f !== "sender-key-memory.json").length
+    },
+    "\u2705 Session loaded \u2014 Baileys auth state ready"
+  );
+  let contactsUpsertFired = false;
+  let lastContactsUpsertAt = 0;
+  let exportScheduled = false;
+  async function doExport() {
+    try {
+      const currentFiles = fs.readdirSync(sessionDir);
+      const sessionCount = currentFiles.filter((f) => f.startsWith("session-")).length;
+      const senderKeyCount = currentFiles.filter((f) => f.startsWith("sender-key-") && f !== "sender-key-memory.json").length;
+      const startingSessions = fileKeys.filter((f) => f.startsWith("session-")).length;
+      if (sessionCount <= startingSessions && senderKeyCount === 0) {
+        logger.info({ sessionCount, senderKeyCount }, "\u23ED Session export skipped \u2014 no new sessions accumulated");
+        return;
+      }
+      const updatedFileMap = {};
+      for (const file of currentFiles) {
+        try {
+          updatedFileMap[file] = JSON.parse(fs.readFileSync(path.join(sessionDir, file), "utf-8"));
+        } catch {
+        }
+      }
+      const newSessionId = await encodeSessionToBase64(updatedFileMap);
+      logger.info(
+        { sessionCount, senderKeyCount, sessionIdLength: newSessionId.length },
+        "\u2705 SESSION_ID refreshed; use .refreshsession in WhatsApp to retrieve it securely (value omitted from logs)"
+      );
+    } catch (err) {
+      logger.warn({ err }, "Session export failed \u2014 use .refreshsession instead");
+    }
+  }
+  function scheduleExportAfterQuiet() {
+    if (exportScheduled) return;
+    exportScheduled = true;
+    const CHECK_INTERVAL = 5e3;
+    const QUIET_WINDOW = 9e4;
+    const MAX_WAIT = 3e5;
+    const started = Date.now();
+    const interval = setInterval(async () => {
+      const quietFor = Date.now() - lastContactsUpsertAt;
+      const elapsed = Date.now() - started;
+      const sessionCount = fs.readdirSync(sessionDir).filter((f) => f.startsWith("session-")).length;
+      const isReady = contactsUpsertFired && quietFor >= QUIET_WINDOW && sessionCount > 0 || elapsed >= MAX_WAIT;
+      if (isReady) {
+        clearInterval(interval);
+        logger.info({ quietFor, elapsed, sessionCount }, "\u{1F504} Baileys sync settled \u2014 exporting enriched SESSION_ID");
+        await doExport();
+      } else {
+        logger.info({ quietFor, elapsed, sessionCount, waitingFor: Math.max(0, QUIET_WINDOW - quietFor) }, "\u23F3 Waiting for Baileys sync to settle...");
+      }
+    }, CHECK_INTERVAL);
+  }
+  globalThis.__nutterOnContactsUpsert = () => {
+    contactsUpsertFired = true;
+    lastContactsUpsertAt = Date.now();
+    scheduleExportAfterQuiet();
+  };
+  return authState;
+}
+var MAX_PREKEYS = 50;
+var SESSION_RAW_BUDGET = 15e4;
+var SENDER_KEY_RAW_BUDGET = 12e4;
+async function encodeSessionToBase64(fileMap) {
+  const toEncode = {};
+  if (fileMap["creds.json"]) toEncode["creds.json"] = fileMap["creds.json"];
+  else logger.warn("creds.json not found");
+  const preKeyFiles = Object.keys(fileMap).filter((f) => f.startsWith("pre-key-") && f.endsWith(".json")).sort((a, b) => {
+    const idA = parseInt(a.replace("pre-key-", "").replace(".json", ""), 10) || 0;
+    const idB = parseInt(b.replace("pre-key-", "").replace(".json", ""), 10) || 0;
+    return idA - idB;
+  }).slice(-MAX_PREKEYS);
+  for (const f of preKeyFiles) toEncode[f] = fileMap[f];
+  let sessionRawBytes = 0;
+  for (const f of Object.keys(fileMap).filter((f2) => f2.startsWith("session-") && f2.endsWith(".json")).sort()) {
+    const size = JSON.stringify(fileMap[f]).length;
+    if (sessionRawBytes + size > SESSION_RAW_BUDGET) break;
+    toEncode[f] = fileMap[f];
+    sessionRawBytes += size;
+  }
+  if (fileMap["sender-key-memory.json"]) toEncode["sender-key-memory.json"] = fileMap["sender-key-memory.json"];
+  const sessionDirForStat = activeBotSessionDir ?? os.tmpdir();
+  let senderKeyRawBytes = 0;
+  const senderKeyFiles = Object.keys(fileMap).filter((f) => f.startsWith("sender-key-") && f.endsWith(".json") && f !== "sender-key-memory.json").sort((a, b) => {
+    try {
+      return fs.statSync(path.join(sessionDirForStat, b)).mtimeMs - fs.statSync(path.join(sessionDirForStat, a)).mtimeMs;
+    } catch {
+      return a.localeCompare(b);
+    }
+  });
+  for (const f of senderKeyFiles) {
+    const size = JSON.stringify(fileMap[f]).length;
+    if (senderKeyRawBytes + size > SENDER_KEY_RAW_BUDGET) break;
+    toEncode[f] = fileMap[f];
+    senderKeyRawBytes += size;
+  }
+  const sessionCount = Object.keys(toEncode).filter((f) => f.startsWith("session-")).length;
+  const senderKeyCount = Object.keys(toEncode).filter((f) => f.startsWith("sender-key-")).length;
+  logger.info(
+    {
+      totalFiles: Object.keys(toEncode).length,
+      preKeys: preKeyFiles.length,
+      sessions: sessionCount,
+      senderKeys: senderKeyCount,
+      sessionBytes: sessionRawBytes,
+      senderBytes: senderKeyRawBytes
+    },
+    "Encoding session"
+  );
+  const compressed = await gzip(Buffer.from(JSON.stringify(toEncode), "utf-8"));
+  const encoded = SESSION_PREFIX + compressed.toString("base64");
+  const charLen = encoded.length;
+  if (charLen > 6e4) logger.warn({ charLen }, "\u26A0\uFE0F SESSION_ID approaching Heroku 64 KB limit");
+  else logger.info({ charLen }, "\u2705 SESSION_ID size OK");
+  return encoded;
+}
+
+// artifacts/api-server/src/bot/store.ts
+var groupStore = /* @__PURE__ */ new Map();
+function getGroupSettings(groupId) {
+  return groupStore.get(groupId) ?? null;
+}
+function ensureGroupSettings(groupId) {
+  if (!groupStore.has(groupId)) {
+    groupStore.set(groupId, {
+      groupId,
+      // FIX: Default ALL protections to OFF so the bot doesn't start deleting
+      // messages or kicking members in groups immediately after joining.
+      // Admins must explicitly enable features with commands (.antilink on, etc).
+      // Env vars can still force a default ON via ANTI_LINK=true etc.
+      antilink: process.env["ANTI_LINK"] === "true",
+      antibadword: process.env["ANTI_BAD_WORD"] === "true" ? "delete" : "off",
+      customBadWords: null,
+      antimention: process.env["ANTI_MENTION"] === "true",
+      antiDelete: process.env["ANTI_DELETE"] === "true",
+      antiEdit: process.env["ANTI_EDIT"] === "true",
+      antiNudes: process.env["ANTI_NUDES"] === "true",
+      mute: false,
+      customPrefix: null,
+      welcomeEnabled: false,
+      welcomeMessage: null,
+      autoReply: null
+    });
+  }
+  return groupStore.get(groupId);
+}
+function updateGroupSettings(groupId, update) {
+  const existing = ensureGroupSettings(groupId);
+  groupStore.set(groupId, { ...existing, ...update });
+}
+var userStore = /* @__PURE__ */ new Map();
+function getUserSettings(userId) {
+  return userStore.get(userId) ?? null;
+}
+function setUserBanned(userId, isBanned) {
+  userStore.set(userId, { userId, isBanned });
+}
+var botSettings = {
+  autoViewStatus: process.env["AUTO_VIEW_STATUS"] !== "false",
+  autoLikeStatus: process.env["AUTO_LIKE_STATUS"] !== "false",
+  statusLikeEmoji: process.env["STATUS_LIKE_EMOJI"] || "\u2764\uFE0F",
+  autoRejectCall: process.env["AUTO_REJECT_CALL"] !== "false",
+  autoRead: process.env["AUTO_READ"] !== "false",
+  smartReply: process.env["SMART_REPLY"] !== "false"
+};
+function getBotSettings() {
+  return { ...botSettings };
+}
+function updateBotSettings(update) {
+  Object.assign(botSettings, update);
+}
+var MSG_TTL = 24 * 60 * 60 * 1e3;
+var MSG_MAX = 2e3;
+var msgCache = /* @__PURE__ */ new Map();
+function cacheMessage(msg) {
+  const id = msg.key.id;
+  if (!id) return;
+  if (msgCache.size >= MSG_MAX) {
+    const now = Date.now();
+    for (const [k, v] of msgCache) {
+      if (v.expireAt < now) msgCache.delete(k);
+    }
+    while (msgCache.size >= MSG_MAX) {
+      const oldest = msgCache.keys().next().value;
+      if (!oldest) break;
+      msgCache.delete(oldest);
+    }
+  }
+  msgCache.set(id, { msg, expireAt: Date.now() + MSG_TTL });
+}
+function popCachedMessage(id) {
+  const entry = msgCache.get(id);
+  if (!entry) return null;
+  msgCache.delete(id);
+  return entry.expireAt >= Date.now() ? entry.msg : null;
+}
+function getCachedMessage(id) {
+  const entry = msgCache.get(id);
+  if (!entry) return null;
+  if (entry.expireAt < Date.now()) {
+    msgCache.delete(id);
+    return null;
+  }
+  return entry.msg;
+}
+var lidToJidMap = /* @__PURE__ */ new Map();
+function registerLidMapping(lidJid, realJid) {
+  lidToJidMap.set(lidJid, realJid);
+}
+function resolveLid(jid) {
+  if (!jid.endsWith("@lid")) return jid;
+  return lidToJidMap.get(jid) ?? jid;
+}
+function tryLiveResolveLid(sock, jid) {
+  if (!jid.endsWith("@lid")) return jid;
+  try {
+    const repo = sock.signalRepository?.lidMapping;
+    const rawPn = repo?.getPNForLID?.(jid);
+    if (!rawPn) return null;
+    const pnJid = rawPn.includes("@") ? rawPn : `${rawPn}@s.whatsapp.net`;
+    registerLidMapping(jid, pnJid);
+    return pnJid;
+  } catch {
+    return null;
+  }
+}
+
+// artifacts/api-server/src/bot/utils.ts
+async function safeSend(sock, jid, content, options) {
+  let timeout;
+  try {
+    return await Promise.race([
+      sock.sendMessage(jid, content, options),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(`safeSend timeout \u2192 ${jid}`)), 8e3);
+      })
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+// artifacts/api-server/src/bot/commands/general.ts
+import fs2 from "fs";
+import path2 from "path";
+function getMenuImageBuffer() {
+  try {
+    const assetPath = path2.join(__dirname, "assets", "menu.jpg");
+    return fs2.readFileSync(assetPath);
+  } catch {
+    return null;
+  }
+}
+var MENU_CATEGORIES = [
+  {
+    icon: "\u{1F60A}",
+    name: "FUN",
+    commands: ["meme", "joke", "quote", "trivia", "8ball", "ship", "love", "hug"]
+  },
+  {
+    icon: "\u{1F6E1}\uFE0F",
+    name: "GROUP",
+    commands: ["kick", "add", "promote", "demote", "mute", "unmute", "antilink", "tagall", "groupinfo"]
+  },
+  {
+    icon: "\u2699\uFE0F",
+    name: "TOOLS",
+    commands: ["sticker", "ping", "alive", "menu", "owner", "settings", "restart", "setprefix", "refreshsession", "autoread", "smartreply"]
+  },
+  {
+    icon: "\u{1F512}",
+    name: "SECURITY",
+    commands: ["antibadword", "setbadwords", "antimention", "antidelete", "antiedit", "antinudes", "ban", "unban"]
+  },
+  {
+    icon: "\u{1F4CA}",
+    name: "STATUS",
+    commands: ["autoviewstatus", "autolikestatus", "statusemoji"]
+  },
+  {
+    icon: "\u{1F389}",
+    name: "EVENTS",
+    commands: ["welcome", "setwelcome", "autoreply"]
+  }
+];
+var TOTAL_COMMANDS = MENU_CATEGORIES.reduce((sum, c) => sum + c.commands.length, 0);
+function buildMenuText(prefix, pushName) {
+  const now = /* @__PURE__ */ new Date();
+  const dateStr = now.toLocaleString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  const header = `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [ NUTTER-XMD ] \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+\u2733 | TOTAL COMMANDS: ${TOTAL_COMMANDS}
+\u2733 | PREFIX: ${prefix}
+\u2733 | USER: ${pushName}
+\u2733 | DATE: ${dateStr}`;
+  const categories = MENU_CATEGORIES.map(({ icon, name, commands }) => {
+    const rows = commands.map((cmd) => `\u2502\u21AA\u2192. ${prefix}${cmd}`).join("\n");
+    return `
+
+\u2500\u2500\u2500\u2500 \u300C ${icon} ${name} \u300D \u2500\u2500\u2500\u2500\u2192
+${rows}
+\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192`;
+  }).join("");
+  return header + categories;
+}
+async function handlePing(sock, msg, ctx) {
+  await safeSend(sock, ctx.jid, { text: "\u{1F3D3} *Pong!* Bot is alive." }, { quoted: msg });
+}
+async function handleAlive(sock, _msg, ctx) {
+  const uptime = process.uptime();
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor(uptime % 3600 / 60);
+  const seconds = Math.floor(uptime % 60);
+  const text = `*NUTTER-XMD* \u26A1
+
+*Status:* Online
+*Uptime:* ${hours}h ${minutes}m ${seconds}s
+*Version:* 9.1.3`;
+  await safeSend(sock, ctx.jid, { text });
+}
+async function handleMenu(sock, msg, ctx, prefix) {
+  let senderJid;
+  if (ctx.isGroup) {
+    senderJid = msg.key.participant || (sock.user?.id || "");
+  } else if (msg.key.fromMe) {
+    const ownerNumber = (process.env["OWNER_NUMBER"] || "").replace(/[^0-9]/g, "");
+    senderJid = ownerNumber ? `${ownerNumber}@s.whatsapp.net` : sock.user?.id || "";
+  } else {
+    senderJid = msg.key.remoteJid || "";
+  }
+  const pushName = msg.pushName || senderJid.split("@")[0].split(":")[0];
+  const menuText = `Hey @${senderJid.split("@")[0]} \u{1F916}
+
+` + buildMenuText(prefix, pushName);
+  const imgBuf = getMenuImageBuffer();
+  if (imgBuf) {
+    await safeSend(
+      sock,
+      ctx.jid,
+      {
+        image: imgBuf,
+        caption: menuText,
+        mimetype: "image/jpeg",
+        mentions: [senderJid]
+      },
+      { quoted: msg }
+    );
+  } else {
+    logger.warn("Menu image not found \u2014 sending text only");
+    await safeSend(sock, ctx.jid, { text: menuText, mentions: [senderJid] }, { quoted: msg });
+  }
+}
+async function handleOwner(sock, _msg, ctx) {
+  const ownerNumber = process.env["OWNER_NUMBER"] || "";
+  if (!ownerNumber) {
+    await safeSend(sock, ctx.jid, { text: "Owner number not configured." });
+    return;
+  }
+  const digits = ownerNumber.replace(/[^0-9]/g, "");
+  await safeSend(sock, ctx.jid, {
+    contacts: {
+      displayName: "NUTTER-XMD Owner",
+      contacts: [{ vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:NUTTER-XMD Owner
+TEL;type=CELL;type=VOICE;waid=${digits}:+${digits}
+END:VCARD`, displayName: "NUTTER-XMD Owner" }]
+    }
+  });
+}
+async function handleSettings(sock, _msg, ctx, prefix) {
+  const botName = process.env["BOT_NAME"] || "NUTTER-XMD";
+  const ownerNumber = process.env["OWNER_NUMBER"] || "Not set";
+  const mode = (process.env["BOT_MODE"] || "public").toLowerCase();
+  const bs = getBotSettings();
+  const botInfo = `*${botName} Settings*
+
+*General*
+Prefix: ${prefix}
+Mode: ${mode}
+Owner: ${ownerNumber}
+
+*Status*
+Auto-view status: ${bs.autoViewStatus ? "ON" : "OFF"}
+Auto-like status: ${bs.autoLikeStatus ? "ON" : "OFF"}
+Auto-read: ${bs.autoRead ? "ON" : "OFF"}
+Smart reply: ${bs.smartReply ? "ON" : "OFF"}
+Status emoji: ${bs.statusLikeEmoji}`;
+  let groupInfo = "";
+  if (ctx.groupSettings) {
+    const s = ctx.groupSettings;
+    groupInfo = `
+
+*Group Protection*
+Antilink: ${s.antilink ? "ON" : "OFF"}
+Antibadword: ${s.antibadword !== "off" ? "ON (" + s.antibadword + ")" : "OFF"}
+Antimention: ${s.antimention ? "ON" : "OFF"}
+Antidelete: ${s.antiDelete ? "ON" : "OFF"}
+Antiedit: ${s.antiEdit ? "ON" : "OFF"}
+Antinudes: ${s.antiNudes ? "ON" : "OFF"}
+Mute: ${s.mute ? "ON" : "OFF"}
+Custom Prefix: ${s.customPrefix || prefix}
+
+*Welcome*
+Welcome Messages: ${s.welcomeEnabled ? "ON" : "OFF"}
+Welcome Text: ${s.welcomeMessage || "Default"}`;
+  }
+  await safeSend(sock, ctx.jid, { text: botInfo + groupInfo });
+}
+async function downloadToBuffer(mediaMsg, type) {
+  const { downloadContentFromMessage } = await import("@whiskeysockets/baileys");
+  const stream = await downloadContentFromMessage(
+    mediaMsg,
+    type
+  );
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+async function extractVideoFirstFrame(videoBuffer) {
+  const os2 = await import("os");
+  const pathMod = await import("path");
+  const fsMod = await import("fs");
+  const { spawn } = await import("child_process");
+  const tmpDir = os2.default.tmpdir();
+  const inputPath = pathMod.default.join(tmpDir, `nutter_vid_${Date.now()}.mp4`);
+  const outputPath = pathMod.default.join(tmpDir, `nutter_frame_${Date.now()}.png`);
+  fsMod.default.writeFileSync(inputPath, videoBuffer);
+  await new Promise((resolve, reject) => {
+    const proc = spawn("ffmpeg", [
+      "-y",
+      "-i",
+      inputPath,
+      "-ss",
+      "0",
+      "-vframes",
+      "1",
+      "-f",
+      "image2",
+      outputPath
+    ]);
+    proc.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`ffmpeg exited with code ${code}`));
+    });
+    proc.on("error", (err) => {
+      if (err.code === "ENOENT") reject(new Error("FFMPEG_NOT_FOUND"));
+      else reject(err);
+    });
+  });
+  const frameBuffer = fsMod.default.readFileSync(outputPath);
+  fsMod.default.rmSync(inputPath, { force: true });
+  fsMod.default.rmSync(outputPath, { force: true });
+  return frameBuffer;
+}
+async function handleSticker(sock, msg, ctx) {
+  const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+  if (!quoted) {
+    await safeSend(sock, ctx.jid, { text: "Reply to an image or video with .sticker to convert it to a sticker." });
+    return;
+  }
+  const imageMsg = quoted.imageMessage;
+  const videoMsg = quoted.videoMessage;
+  if (!imageMsg && !videoMsg) {
+    await safeSend(sock, ctx.jid, { text: "Only images and short videos can be converted to stickers. Reply to an image or video." });
+    return;
+  }
+  try {
+    const { default: sharp2 } = await import("sharp");
+    let sourceBuffer;
+    if (imageMsg) {
+      sourceBuffer = await downloadToBuffer(imageMsg, "image");
+    } else {
+      sourceBuffer = await downloadToBuffer(videoMsg, "video");
+      sourceBuffer = await extractVideoFirstFrame(sourceBuffer);
+    }
+    if (!sourceBuffer || sourceBuffer.length === 0) {
+      await safeSend(sock, ctx.jid, { text: "Could not download the media. Please try again." });
+      return;
+    }
+    const webpBuffer = await sharp2(sourceBuffer).resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: 80 }).toBuffer();
+    await safeSend(sock, ctx.jid, { sticker: webpBuffer });
+  } catch (err) {
+    logger.error({ err }, "Sticker conversion failed");
+    const isNoFfmpeg = err instanceof Error && err.message === "FFMPEG_NOT_FOUND";
+    await safeSend(sock, ctx.jid, {
+      text: isNoFfmpeg ? "Video stickers are not supported on this server (ffmpeg not installed). Try sending an image instead." : "Sticker conversion failed. Please try again."
+    });
+  }
+}
+async function handleRestart(sock, _msg, ctx) {
+  if (!ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Only owner command" });
+    return;
+  }
+  await safeSend(sock, ctx.jid, { text: "Restarting..." });
+  setTimeout(() => process.exit(0), 1e3);
+}
+async function handleRefreshSession(sock, _msg, ctx) {
+  if (!ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Only owner command" });
+    return;
+  }
+  const sessionDir = getActiveBotSessionDir();
+  if (!sessionDir) {
+    await safeSend(sock, ctx.jid, { text: "\u26A0\uFE0F Session directory not found. Bot may not be fully initialized." });
+    return;
+  }
+  await safeSend(sock, ctx.jid, { text: "\u23F3 Reading live session files and building new SESSION_ID \u2014 please wait..." });
+  try {
+    const files = fs2.readdirSync(sessionDir);
+    const fileMap = {};
+    for (const file of files) {
+      try {
+        fileMap[file] = JSON.parse(fs2.readFileSync(path2.join(sessionDir, file), "utf-8"));
+      } catch {
+      }
+    }
+    const sessionCount = files.filter((f) => f.startsWith("session-")).length;
+    const senderKeyCount = files.filter((f) => f.startsWith("sender-key-") && f !== "sender-key-memory.json").length;
+    const totalKb = Buffer.byteLength(JSON.stringify(fileMap)) / 1024;
+    const newSessionId = await encodeSessionToBase64(fileMap);
+    await safeSend(sock, ctx.jid, { text: newSessionId });
+    await safeSend(sock, ctx.jid, {
+      text: `\u2705 *New SESSION_ID generated!*
+
+\u{1F4CA} *Stats:*
+\u2022 Session files:    ${sessionCount}
+\u2022 Sender-key files: ${senderKeyCount}
+\u2022 Raw size:         ${totalKb.toFixed(1)} KB
+
+Copy the SESSION_ID above and set it as the *SESSION_ID* config var on Heroku, then redeploy.
+After that, all commands (DM + groups) will respond instantly.`
+    });
+  } catch (err) {
+    logger.error({ err }, "handleRefreshSession failed");
+    await safeSend(sock, ctx.jid, { text: "\u274C Failed to generate SESSION_ID. Check server logs." });
+  }
+}
+
+// artifacts/api-server/src/bot/commands/fun.ts
+var JOKES = [
+  "Why did the computer get cold? It left its Windows open.",
+  "I told my phone I needed a break. It put me on airplane mode.",
+  "Why do developers like dark mode? Because light attracts bugs.",
+  "A bot walks into a group chat. The admins ask, \u201CAre you here to help?\u201D It replies, \u201CThat depends on your permissions.\u201D"
+];
+var QUOTES = [
+  "\u201CIt always seems impossible until it\u2019s done.\u201D \u2014 Nelson Mandela",
+  "\u201CThe secret of getting ahead is getting started.\u201D \u2014 Mark Twain",
+  "\u201CGreat things are done by a series of small things brought together.\u201D \u2014 Vincent van Gogh",
+  "\u201CSimplicity is the ultimate sophistication.\u201D \u2014 Leonardo da Vinci"
+];
+var TRIVIA = [
+  { question: "Which planet has the most moons confirmed so far?", options: "A) Earth  B) Jupiter  C) Saturn", answer: "C) Saturn" },
+  { question: "What is the largest ocean on Earth?", options: "A) Atlantic  B) Pacific  C) Indian", answer: "B) Pacific" },
+  { question: "Which element has the chemical symbol O?", options: "A) Gold  B) Oxygen  C) Osmium", answer: "B) Oxygen" }
+];
+var EIGHT_BALL_ANSWERS = [
+  "Yes \u2014 definitely.",
+  "The signs point to yes.",
+  "Ask again in a little while.",
+  "Not likely.",
+  "I can\u2019t predict that right now."
+];
+var TEXT_MEMES = [
+  "Me: I\u2019ll fix one small bug.\nThe bot: *reveals 36 commands with no handlers*",
+  "When the command works on the first try:\n*checks the logs anyway*",
+  "Bot: I\u2019m online.\nAlso bot: waiting for the WhatsApp connection\u2026"
+];
+function pick(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+function stableScore(input) {
+  let hash = 2166136261;
+  for (const char of input.toLowerCase()) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash >>> 0) % 101;
+}
+async function handleFunCommand(sock, msg, ctx, command, args) {
+  switch (command) {
+    case "meme":
+      await safeSend(sock, ctx.jid, { text: `\u{1F602} ${pick(TEXT_MEMES)}` }, { quoted: msg });
+      return;
+    case "joke":
+      await safeSend(sock, ctx.jid, { text: `\u{1F604} ${pick(JOKES)}` }, { quoted: msg });
+      return;
+    case "quote":
+      await safeSend(sock, ctx.jid, { text: `\u{1F4AC} ${pick(QUOTES)}` }, { quoted: msg });
+      return;
+    case "trivia": {
+      const item = pick(TRIVIA);
+      await safeSend(
+        sock,
+        ctx.jid,
+        { text: `\u{1F9E0} ${item.question}
+${item.options}
+
+Answer: ${item.answer}` },
+        { quoted: msg }
+      );
+      return;
+    }
+    case "8ball": {
+      if (!args.length) {
+        await safeSend(sock, ctx.jid, { text: `Ask a yes-or-no question.
+Usage: ${ctx.prefix}8ball Will I have a good day?` });
+        return;
+      }
+      await safeSend(sock, ctx.jid, { text: `\u{1F3B1} ${pick(EIGHT_BALL_ANSWERS)}` }, { quoted: msg });
+      return;
+    }
+    case "ship":
+    case "love": {
+      const names = args.join(" ").split(/\s+(?:x|&|and)\s+/i).map((name) => name.trim()).filter(Boolean);
+      if (names.length < 2) {
+        await safeSend(sock, ctx.jid, { text: `Provide two names.
+Usage: ${ctx.prefix}${command} Alex and Sam` });
+        return;
+      }
+      const pair = [names[0], names[1]].sort((a, b) => a.localeCompare(b));
+      const score = stableScore(`${pair[0]}|${pair[1]}`);
+      const emoji = score > 79 ? "\u{1F49E}" : score > 49 ? "\u2764\uFE0F" : "\u{1FAF6}";
+      await safeSend(sock, ctx.jid, { text: `${emoji} *${names[0]} + ${names[1]}*: ${score}%` }, { quoted: msg });
+      return;
+    }
+    case "hug": {
+      const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+      const target = mentioned || args.join(" ").trim();
+      const display = mentioned ? `@${mentioned.split("@")[0]}` : target || "you";
+      await safeSend(
+        sock,
+        ctx.jid,
+        { text: `\u{1F917} Sending a warm hug to ${display}!`, ...mentioned ? { mentions: [mentioned] } : {} },
+        { quoted: msg }
+      );
+      return;
+    }
+  }
+}
+
+// artifacts/api-server/src/bot/commands/group.ts
+async function handleKick(sock, msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "This command requires bot admin privileges." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+  if (!mentioned || mentioned.length === 0) {
+    await safeSend(sock, ctx.jid, { text: "Tag the user to kick: .kick @user" });
+    return;
+  }
+  try {
+    await sock.groupParticipantsUpdate(ctx.jid, mentioned, "remove");
+    await safeSend(sock, ctx.jid, { text: `Removed ${mentioned.length} member(s).` });
+  } catch (err) {
+    logger.error({ err }, "Failed to kick");
+    await safeSend(sock, ctx.jid, { text: "Failed to kick. Make sure I am an admin." });
+  }
+}
+async function handleAdd(sock, _msg, ctx, args) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "This command requires bot admin privileges." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const number = args[0]?.replace(/[^0-9]/g, "");
+  if (!number) {
+    await safeSend(sock, ctx.jid, { text: "Provide number: .add +254712345678" });
+    return;
+  }
+  const memberJid = number + "@s.whatsapp.net";
+  try {
+    await sock.groupParticipantsUpdate(ctx.jid, [memberJid], "add");
+    await safeSend(sock, ctx.jid, { text: `Added ${number} to the group.` });
+  } catch (err) {
+    logger.error({ err }, "Failed to add");
+    await safeSend(sock, ctx.jid, { text: "Failed to add. The number may not be on WhatsApp." });
+  }
+}
+async function handlePromote(sock, msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} I need admin privileges for this." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+  if (!mentioned || mentioned.length === 0) {
+    await safeSend(sock, ctx.jid, { text: "Tag a user: .promote @user" });
+    return;
+  }
+  await sock.groupParticipantsUpdate(ctx.jid, mentioned, "promote");
+  await safeSend(sock, ctx.jid, { text: "Promoted successfully." });
+}
+async function handleDemote(sock, msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} I need admin privileges for this." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+  if (!mentioned || mentioned.length === 0) {
+    await safeSend(sock, ctx.jid, { text: "Tag a user: .demote @user" });
+    return;
+  }
+  await sock.groupParticipantsUpdate(ctx.jid, mentioned, "demote");
+  await safeSend(sock, ctx.jid, { text: "Demoted successfully." });
+}
+async function handleAntilink(sock, _msg, ctx, args) {
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    await safeSend(sock, ctx.jid, { text: "Usage: .antilink on | .antilink off" });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { antilink: state });
+  await safeSend(sock, ctx.jid, { text: `Antilink is now ${state ? "ON" : "OFF"}.` });
+}
+async function handleAntibadword(sock, _msg, ctx, args) {
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  const VALID = ["on", "true", "delete", "kick", "off", "false"];
+  if (!raw || !VALID.includes(raw)) {
+    await safeSend(sock, ctx.jid, {
+      text: `Usage:
+.antibadword delete \u2014 Delete bad messages
+.antibadword kick   \u2014 Delete + warn; remove after 3 violations in 24h
+.antibadword off    \u2014 Disable
+
+Current: ${ensureGroupSettings(ctx.jid).antibadword}`
+    });
+    return;
+  }
+  let mode;
+  if (raw === "off" || raw === "false") mode = "off";
+  else if (raw === "kick") mode = "kick";
+  else mode = "delete";
+  updateGroupSettings(ctx.jid, { antibadword: mode });
+  const label = mode === "off" ? "OFF" : mode === "kick" ? "ON \u2014 Delete + Kick" : "ON \u2014 Delete only";
+  await safeSend(sock, ctx.jid, { text: `Antibadword is now *${label}*.` });
+}
+async function handleSetBadWords(sock, _msg, ctx, args) {
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in a group." });
+    return;
+  }
+  if (args[0]?.toLowerCase() === "reset") {
+    updateGroupSettings(ctx.jid, { customBadWords: null });
+    await safeSend(sock, ctx.jid, { text: "\u2705 Bad words list reset to default." });
+    return;
+  }
+  if (args[0]?.toLowerCase() === "list") {
+    const gs = ensureGroupSettings(ctx.jid);
+    const list = gs.customBadWords ? gs.customBadWords.split(",").map((w) => w.trim()).join(", ") : "Using default list";
+    await safeSend(sock, ctx.jid, { text: `*Bad Words List:*
+${list}` });
+    return;
+  }
+  if (!args.length) {
+    await safeSend(sock, ctx.jid, {
+      text: `Usage:
+.setbadwords <word1, word2, word3> \u2014 Set custom bad words
+.setbadwords list \u2014 Show current list
+.setbadwords reset \u2014 Restore default list`
+    });
+    return;
+  }
+  const words = args.join(" ").split(",").map((w) => w.trim().toLowerCase()).filter(Boolean);
+  updateGroupSettings(ctx.jid, { customBadWords: words.join(",") });
+  await safeSend(sock, ctx.jid, { text: `\u2705 Bad words list updated:
+${words.join(", ")}` });
+}
+async function handleAntiDelete(sock, _msg, ctx, args) {
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in a group." });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    const current = ensureGroupSettings(ctx.jid).antiDelete;
+    await safeSend(sock, ctx.jid, { text: `Usage: .antidelete on | .antidelete off
+Current: ${current ? "ON" : "OFF"}` });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { antiDelete: state });
+  await safeSend(sock, ctx.jid, { text: `Antidelete is now *${state ? "ON" : "OFF"}*.${state ? "\nDeleted messages will be forwarded to owner's DM." : ""}` });
+}
+async function handleAntiEdit(sock, _msg, ctx, args) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in a group." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    await safeSend(sock, ctx.jid, {
+      text: `Usage: ${ctx.prefix}antiedit on | ${ctx.prefix}antiedit off
+Current: ${ensureGroupSettings(ctx.jid).antiEdit ? "ON" : "OFF"}`
+    });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { antiEdit: state });
+  await safeSend(sock, ctx.jid, {
+    text: `Anti-edit is now ${state ? "ON" : "OFF"}. Edited group messages will be reported in this group.`
+  });
+}
+async function handleAntiNudes(sock, _msg, ctx, args) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in a group." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    await safeSend(sock, ctx.jid, {
+      text: `Usage: ${ctx.prefix}antinudes on | ${ctx.prefix}antinudes off
+Current: ${ensureGroupSettings(ctx.jid).antiNudes ? "ON" : "OFF"}
+
+The first enabled sticker may take longer while the local moderation model loads.`
+    });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { antiNudes: state });
+  await safeSend(sock, ctx.jid, {
+    text: `Explicit-sticker moderation is now ${state ? "ON" : "OFF"}. The bot needs group-admin permission to delete stickers or remove repeat offenders.`
+  });
+}
+async function handleAntimention(sock, _msg, ctx, args) {
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    await safeSend(sock, ctx.jid, { text: "Usage: .antimention on | .antimention off" });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { antimention: state });
+  await safeSend(sock, ctx.jid, { text: `Antimention is now ${state ? "ON" : "OFF"}.` });
+}
+async function handleBan(sock, msg, ctx) {
+  if (!ctx.isOwner && !ctx.isSenderGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+  if (!mentioned || mentioned.length === 0) {
+    await safeSend(sock, ctx.jid, { text: "Tag a user: .ban @user" });
+    return;
+  }
+  for (const userId of mentioned) {
+    setUserBanned(userId, true);
+  }
+  await safeSend(sock, ctx.jid, { text: `Banned ${mentioned.length} user(s).` });
+}
+async function handleUnban(sock, msg, ctx) {
+  if (!ctx.isOwner && !ctx.isSenderGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+  if (!mentioned || mentioned.length === 0) {
+    await safeSend(sock, ctx.jid, { text: "Tag a user: .unban @user" });
+    return;
+  }
+  for (const userId of mentioned) {
+    setUserBanned(userId, false);
+  }
+  await safeSend(sock, ctx.jid, { text: `Unbanned ${mentioned.length} user(s).` });
+}
+async function handleSetPrefix(sock, _msg, ctx, args) {
+  if (!ctx.jid.endsWith("@g.us")) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const newPrefix = args[0]?.trim();
+  if (!newPrefix || newPrefix.length > 5) {
+    await safeSend(sock, ctx.jid, { text: "Provide a prefix (1\u20135 chars): .setprefix !" });
+    return;
+  }
+  updateGroupSettings(ctx.jid, { customPrefix: newPrefix });
+  await safeSend(sock, ctx.jid, { text: `Prefix changed to: ${newPrefix}` });
+}
+async function handleTagAll(sock, msg, ctx, args) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} I need admin privileges for tagall." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  try {
+    const groupMeta = await sock.groupMetadata(ctx.jid);
+    const participants = groupMeta.participants.map((p) => p.id);
+    const announcement = args.length > 0 ? args.join(" ") : "\u{1F4E2} Attention everyone!";
+    const mentions = participants.map((jid) => `@${jid.split("@")[0]}`).join(" ");
+    await safeSend(sock, ctx.jid, {
+      text: `${announcement}
+
+${mentions}`,
+      mentions: participants
+    });
+  } catch (err) {
+    logger.error({ err }, "Failed to tagall");
+    await safeSend(sock, ctx.jid, { text: "Failed to tag all members." });
+  }
+}
+async function handleGroupInfo(sock, _msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  try {
+    const groupMeta = await sock.groupMetadata(ctx.jid);
+    const adminCount = groupMeta.participants.filter(
+      (p) => p.admin === "admin" || p.admin === "superadmin"
+    ).length;
+    const createdAt = groupMeta.creation ? new Date(groupMeta.creation * 1e3).toLocaleDateString() : "Unknown";
+    const settings = ctx.groupSettings;
+    const protections = [
+      settings?.antilink ? "Antilink" : null,
+      settings?.antibadword !== "off" ? "Antibadword" : null,
+      settings?.antimention ? "Antimention" : null,
+      settings?.mute ? "Muted" : null
+    ].filter(Boolean).join(", ") || "None";
+    const text = `*Group Info*
+
+*Name:* ${groupMeta.subject}
+*Members:* ${groupMeta.participants.length}
+*Admins:* ${adminCount}
+*Created:* ${createdAt}
+*Description:* ${groupMeta.desc || "None"}
+*Active Protections:* ${protections}`;
+    await safeSend(sock, ctx.jid, { text });
+  } catch (err) {
+    logger.error({ err }, "Failed to get group info");
+    await safeSend(sock, ctx.jid, { text: "Failed to retrieve group info." });
+  }
+}
+async function handleMute(sock, _msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} I need admin privileges to mute." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  try {
+    await sock.groupSettingUpdate(ctx.jid, "announcement");
+    updateGroupSettings(ctx.jid, { mute: true });
+    await safeSend(sock, ctx.jid, { text: "\u{1F507} Group muted. Only admins can send messages." });
+  } catch (err) {
+    logger.error({ err }, "Failed to mute group");
+    await safeSend(sock, ctx.jid, { text: "Failed to mute group." });
+  }
+}
+async function handleUnmute(sock, _msg, ctx) {
+  if (!ctx.isGroup) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isBotGroupAdmin) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} I need admin privileges to unmute." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  try {
+    await sock.groupSettingUpdate(ctx.jid, "not_announcement");
+    updateGroupSettings(ctx.jid, { mute: false });
+    await safeSend(sock, ctx.jid, { text: "\u{1F50A} Group unmuted. All members can send messages." });
+  } catch (err) {
+    logger.error({ err }, "Failed to unmute group");
+    await safeSend(sock, ctx.jid, { text: "Failed to unmute group." });
+  }
+}
+async function handleWelcome(sock, _msg, ctx, args) {
+  if (!ctx.jid.endsWith("@g.us")) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const raw = args[0]?.toLowerCase();
+  if (raw !== "on" && raw !== "off") {
+    await safeSend(sock, ctx.jid, { text: `Usage: ${ctx.prefix}welcome on | ${ctx.prefix}welcome off` });
+    return;
+  }
+  const state = raw === "on";
+  updateGroupSettings(ctx.jid, { welcomeEnabled: state });
+  await safeSend(sock, ctx.jid, {
+    text: `Welcome messages are now ${state ? "ON" : "OFF"}.${state ? `
+
+Use ${ctx.prefix}setwelcome <message> to set a custom message. Use {name} as placeholder for the new member's name.` : ""}`
+  });
+}
+async function handleSetWelcome(sock, _msg, ctx, args) {
+  if (!ctx.jid.endsWith("@g.us")) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const message = args.join(" ").trim();
+  if (!message) {
+    await safeSend(sock, ctx.jid, { text: `Usage: ${ctx.prefix}setwelcome Welcome to the group, {name}! \u{1F389}` });
+    return;
+  }
+  updateGroupSettings(ctx.jid, { welcomeMessage: message });
+  await safeSend(sock, ctx.jid, { text: `Welcome message set:
+
+${message}` });
+}
+async function handleAutoReply(sock, _msg, ctx, args) {
+  if (!ctx.jid.endsWith("@g.us")) {
+    await safeSend(sock, ctx.jid, { text: "This command can only be used in groups." });
+    return;
+  }
+  if (!ctx.isSenderGroupAdmin && !ctx.isOwner) {
+    await safeSend(sock, ctx.jid, { text: "\u{1F6AB} Group admins only" });
+    return;
+  }
+  const subCmd = args[0]?.toLowerCase();
+  const settings = ensureGroupSettings(ctx.jid);
+  let autoReplyMap = {};
+  try {
+    if (settings?.autoReply) autoReplyMap = JSON.parse(settings.autoReply);
+  } catch {
+    autoReplyMap = {};
+  }
+  if (subCmd === "list") {
+    const entries = Object.entries(autoReplyMap);
+    if (entries.length === 0) {
+      await safeSend(sock, ctx.jid, { text: "No auto-replies configured for this group." });
+      return;
+    }
+    const list = entries.map(([k, v]) => `*${k}* \u2192 ${v}`).join("\n");
+    await safeSend(sock, ctx.jid, { text: `*Auto-replies:*
+
+${list}` });
+    return;
+  }
+  if (subCmd === "add") {
+    const rest = args.slice(1).join(" ");
+    const separatorIdx = rest.indexOf("|");
+    if (separatorIdx === -1) {
+      await safeSend(sock, ctx.jid, { text: `Usage: ${ctx.prefix}autoreply add <trigger> | <response>` });
+      return;
+    }
+    const trigger = rest.slice(0, separatorIdx).trim().toLowerCase();
+    const response = rest.slice(separatorIdx + 1).trim();
+    if (!trigger || !response) {
+      await safeSend(sock, ctx.jid, { text: "Trigger and response cannot be empty." });
+      return;
+    }
+    autoReplyMap[trigger] = response;
+    updateGroupSettings(ctx.jid, { autoReply: JSON.stringify(autoReplyMap) });
+    await safeSend(sock, ctx.jid, { text: `Auto-reply added:
+*${trigger}* \u2192 ${response}` });
+    return;
+  }
+  if (subCmd === "remove") {
+    const trigger = args.slice(1).join(" ").trim().toLowerCase();
+    if (!trigger) {
+      await safeSend(sock, ctx.jid, { text: `Usage: ${ctx.prefix}autoreply remove <trigger>` });
+      return;
+    }
+    if (!autoReplyMap[trigger]) {
+      await safeSend(sock, ctx.jid, { text: `No auto-reply found for: ${trigger}` });
+      return;
+    }
+    delete autoReplyMap[trigger];
+    updateGroupSettings(ctx.jid, { autoReply: JSON.stringify(autoReplyMap) });
+    await safeSend(sock, ctx.jid, { text: `Auto-reply removed: ${trigger}` });
+    return;
+  }
+  await safeSend(sock, ctx.jid, {
+    text: `Usage:
+${ctx.prefix}autoreply add <trigger> | <response>
+${ctx.prefix}autoreply remove <trigger>
+${ctx.prefix}autoreply list`
+  });
+}
+
+// artifacts/api-server/src/bot/handler.ts
+var DEFAULT_BAD_WORDS = [
+  "fuck",
+  "shit",
+  "bitch",
+  "asshole",
+  "nigga",
+  "faggot",
+  "cunt",
+  "pussy",
+  "whore",
+  "slut",
+  "dick",
+  "cock",
+  "prick",
+  "wanker",
+  "retard",
+  "porn",
+  "malaya",
+  "kumbavu",
+  "mkundu",
+  "mpumbavu",
+  "mshenzi",
+  "shenzi",
+  "nyoko",
+  "mjinga"
+];
+var URL_REGEX = /\b(?:https?:\/\/|www\.|wa\.me\/|t\.me\/|chat\.whatsapp\.com\/|whatsapp\.com\/|telegram\.me\/|discord\.gg\/|discord\.com\/invite\/|instagram\.com\/|tiktok\.com\/|youtube\.com\/|youtu\.be\/|facebook\.com\/|x\.com\/|github\.com\/|bit\.ly\/|tinyurl\.com\/|(?:[a-z0-9-]+\.)+(?:com|net|org|co|io|me|app|dev|info|biz|xyz|site|online|ke|uk|us|gg|ly|tech|store|shop|cloud|ai|tv|live|club|link)(?:\/|\b))/i;
+var linkViolations = /* @__PURE__ */ new Map();
+var badWordViolations = /* @__PURE__ */ new Map();
+function normalizeModerationWord(value) {
+  return value.toLowerCase().normalize("NFKD").replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g, "").replace(/[013457@$!]/g, (char) => ({ "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s", "!": "i" })[char] ?? char).replace(/[^a-z0-9]+/g, " ").replace(/(.)\1+/g, "$1").trim();
+}
+function findBadWord(text, words) {
+  const normalizedTokens = normalizeModerationWord(text).split(/\s+/).filter(Boolean);
+  const compactTokens = normalizedTokens.map((token) => token.replace(/[^a-z0-9]/g, ""));
+  for (const word of words) {
+    const normalizedWord = normalizeModerationWord(word);
+    if (!normalizedWord) continue;
+    if (normalizedWord.includes(" ")) {
+      if (normalizeModerationWord(text).includes(normalizedWord)) return word;
+    } else if (compactTokens.includes(normalizedWord)) {
+      return word;
+    }
+  }
+  return null;
+}
+var GROUP_ADMIN_CONTEXT_COMMANDS = /* @__PURE__ */ new Set([
+  "kick",
+  "add",
+  "promote",
+  "demote",
+  "mute",
+  "unmute",
+  "antilink",
+  "antibadword",
+  "setbadwords",
+  "antimention",
+  "antidelete",
+  "antiedit",
+  "antinudes",
+  "ban",
+  "unban",
+  "setprefix",
+  "tagall",
+  "welcome",
+  "setwelcome",
+  "autoreply"
+]);
+var groupMetaCache = /* @__PURE__ */ new Map();
+var GROUP_META_TTL = 2 * 60 * 1e3;
+var GROUP_META_TIMEOUT = 5e3;
+async function getCachedGroupMeta(sock, jid) {
+  const cached = groupMetaCache.get(jid);
+  if (cached && cached.expireAt > Date.now()) return cached;
+  let timeout;
+  let meta;
+  try {
+    meta = await Promise.race([
+      sock.groupMetadata(jid),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(`groupMetadata timeout for ${jid}`)), GROUP_META_TIMEOUT);
+      })
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+  const entry = {
+    subject: meta.subject,
+    participants: meta.participants,
+    expireAt: Date.now() + GROUP_META_TTL
+  };
+  groupMetaCache.set(jid, entry);
+  return entry;
+}
+function invalidateGroupMetaCache(jid) {
+  groupMetaCache.delete(jid);
+}
+function populateGroupMetaCache(groups) {
+  const expireAt = Date.now() + GROUP_META_TTL;
+  for (const [jid, meta] of Object.entries(groups)) {
+    groupMetaCache.set(jid, { subject: meta.subject, participants: meta.participants, expireAt });
+  }
+  return Object.keys(groups).length;
+}
+function upsertGroupMetaCache(jid, meta) {
+  const existing = groupMetaCache.get(jid);
+  const updated = {
+    subject: meta.subject ?? existing?.subject ?? "",
+    participants: meta.participants ?? existing?.participants ?? [],
+    expireAt: Date.now() + GROUP_META_TTL
+  };
+  groupMetaCache.set(jid, updated);
+}
+function printMessageActivity(opts) {
+  logger.debug({
+    msgType: opts.msgType,
+    isGroup: opts.isGroup,
+    groupNumber: opts.groupNumber
+  }, "Incoming message without command text");
+}
+function resolveMessageJid(sock, rawJid, alternateJid) {
+  if (!rawJid.endsWith("@lid")) return rawJid;
+  if (alternateJid?.endsWith("@s.whatsapp.net")) {
+    registerLidMapping(rawJid, alternateJid);
+    return alternateJid;
+  }
+  const cached = resolveLid(rawJid);
+  if (cached !== rawJid) return cached;
+  return tryLiveResolveLid(sock, rawJid) ?? rawJid;
+}
+async function handleStatusMessage(sock, msg) {
+  const settings = getBotSettings();
+  const senderJid = msg.key.participant || msg.key.participantAlt || "";
+  if (!senderJid || senderJid === "status@broadcast") {
+    logger.debug({ messageId: msg.key.id }, "Status event has no resolvable poster JID");
+    return;
+  }
+  if (settings.autoViewStatus || settings.autoLikeStatus) {
+    try {
+      await sock.readMessages([msg.key]);
+      if (settings.autoViewStatus) logger.debug({ sender: senderJid }, "Status viewed");
+    } catch (err) {
+      logger.debug({ err, sender: senderJid }, "Status read receipt failed");
+    }
+  }
+  if (settings.autoLikeStatus) {
+    try {
+      const emojiList = (settings.statusLikeEmoji || "\u2764\uFE0F").split(",").map((e) => e.trim()).filter(Boolean);
+      const emoji = emojiList[Math.floor(Math.random() * emojiList.length)] || "\u2764\uFE0F";
+      await sock.sendMessage(
+        "status@broadcast",
+        { react: { text: emoji, key: { ...msg.key, remoteJid: "status@broadcast" } } },
+        { statusJidList: [senderJid] }
+      );
+      logger.debug({ sender: senderJid, emoji }, "Status reaction sent");
+    } catch (err) {
+      logger.warn({ err, sender: senderJid }, "Status reaction failed");
+    }
+  }
+}
+var HANDLER_VERSION = "v2.5-LID-LIVE-RESOLVE";
+async function handleMessage(sock, msg) {
+  if (!msg.key) {
+    logger.warn("handleMessage called with no msg.key \u2014 dropped");
+    return;
+  }
+  const ownerNumber = (process.env["OWNER_NUMBER"] || "").replace(/[^0-9]/g, "");
+  const defaultPrefix = process.env["PREFIX"] || ".";
+  const jid = msg.key.remoteJid;
+  if (!jid) {
+    logger.warn("handleMessage: no remoteJid \u2014 dropped");
+    return;
+  }
+  logger.debug({ v: HANDLER_VERSION }, "Handler version");
+  const msgContent = msg.message;
+  if (msgContent?.protocolMessage || msgContent?.reactionMessage || msgContent?.pollUpdateMessage || msgContent?.keepInChatMessage || msgContent?.senderKeyDistributionMessage) {
+    logger.info({ jid, type: msgContent ? Object.keys(msgContent)[0] : "unknown" }, "\u21A9 Protocol message dropped in handler");
+    return;
+  }
+  logger.debug({ jid, fromMe: msg.key.fromMe, msgKeys: Object.keys(msg.message || {}) }, "Message handler reached");
+  const isGroup = jid.endsWith("@g.us");
+  const botJidFull = sock.user?.id || "";
+  let isOwner = false;
+  let senderJidRaw;
+  let realSenderJid;
+  let senderNumber;
+  if (msg.key.fromMe) {
+    const linkedNumber = ownerNumber || botJidFull.split(":")[0].split("@")[0];
+    isOwner = true;
+    senderJidRaw = `${linkedNumber}@s.whatsapp.net`;
+    realSenderJid = senderJidRaw;
+    senderNumber = linkedNumber;
+    logger.debug({ jid }, "Owner identified via fromMe=true");
+  } else {
+    senderJidRaw = isGroup ? msg.key.participant || botJidFull : jid;
+    const alternateSenderJid = isGroup ? msg.key.participantAlt : msg.key.remoteJidAlt;
+    realSenderJid = resolveMessageJid(sock, senderJidRaw, alternateSenderJid);
+    senderNumber = realSenderJid.split(":")[0].split("@")[0];
+    const numberMatch = ownerNumber !== "" && senderNumber === ownerNumber;
+    isOwner = numberMatch;
+    logger.debug(
+      { ownerNumber, senderNumber, senderJidRaw, realSenderJid, numberMatch, isOwner },
+      "\u{1F511} Owner resolution"
+    );
+  }
+  const msgType = Object.keys(msg.message || {})[0] || "unknown";
+  const botMode = (process.env["BOT_MODE"] || "public").trim().toLowerCase();
+  const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || msg.message?.documentMessage?.caption || msg.message?.buttonsResponseMessage?.selectedButtonId || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId || msg.message?.templateButtonReplyMessage?.selectedId || "";
+  logger.info(
+    {
+      fromMe: !!msg.key.fromMe,
+      isGroup,
+      msgType,
+      hasText: Boolean(body),
+      botMode
+    },
+    "Incoming message reached command handler"
+  );
+  if (botMode === "private" && !isOwner) {
+    logger.info({ msgType, botMode }, "Message ignored by private mode");
+    return;
+  }
+  if (!body) {
+    printMessageActivity({ msgType, pushName: msg.pushName || "", senderNumber, isGroup });
+    logger.info({ msgType }, "Message ignored because it has no text body");
+    return;
+  }
+  let groupSettings = null;
+  let isSenderGroupAdmin = false;
+  let isBotGroupAdmin = false;
+  let prefix = defaultPrefix;
+  let groupName;
+  let groupNumber;
+  if (isGroup) {
+    groupSettings = getGroupSettings(jid);
+    if (groupSettings?.customPrefix) prefix = groupSettings.customPrefix;
+    const hasGroupProtection = !!groupSettings && (groupSettings.antilink || groupSettings.antibadword !== "off" || groupSettings.antimention);
+    const commandName = body.startsWith(prefix) ? body.slice(prefix.length).trim().split(/\s+/, 1)[0]?.toLowerCase() ?? "" : "";
+    const needsGroupAdminContext = GROUP_ADMIN_CONTEXT_COMMANDS.has(commandName);
+    if (needsGroupAdminContext || hasGroupProtection && !commandName) {
+      try {
+        const groupMeta = await getCachedGroupMeta(sock, jid);
+        groupName = groupMeta.subject;
+        groupNumber = jid.split("@")[0];
+        const botNumber = botJidFull.split(":")[0].split("@")[0];
+        for (const participant of groupMeta.participants) {
+          const pNum = participant.id.split(":")[0].split("@")[0];
+          const isAdmin2 = participant.admin === "admin" || participant.admin === "superadmin";
+          if (pNum === senderNumber) isSenderGroupAdmin = isAdmin2;
+          if (pNum === botNumber) isBotGroupAdmin = isAdmin2;
+        }
+        const msgKey = msg.key;
+        if (groupSettings) {
+          if (groupSettings.antilink && !isOwner && !isSenderGroupAdmin && URL_REGEX.test(body)) {
+            const violationKey = `${jid}:${realSenderJid}`;
+            const now = Date.now();
+            const previous = linkViolations.get(violationKey);
+            const entry = !previous || now - previous.firstAt > 24 * 60 * 60 * 1e3 ? { count: 1, firstAt: now } : { count: previous.count + 1, firstAt: previous.firstAt };
+            const count = entry.count;
+            linkViolations.set(violationKey, entry);
+            while (linkViolations.size > 3e3) {
+              const oldest = linkViolations.keys().next().value;
+              if (!oldest) break;
+              linkViolations.delete(oldest);
+            }
+            if (isBotGroupAdmin) {
+              await safeSend(sock, jid, { delete: msgKey });
+            }
+            if (count > 1 && isBotGroupAdmin) {
+              await sock.groupParticipantsUpdate(jid, [realSenderJid], "remove");
+              linkViolations.delete(violationKey);
+              await safeSend(sock, jid, {
+                text: `\u{1F6AB} @${realSenderJid.split("@")[0].split(":")[0]} was removed for posting another link after a warning.`,
+                mentions: [realSenderJid]
+              });
+            } else {
+              await safeSend(sock, jid, {
+                text: isBotGroupAdmin ? `\u26A0\uFE0F @${realSenderJid.split("@")[0].split(":")[0]}, links are not allowed. This is your first warning. Another link may result in removal.` : "\u26A0\uFE0F Links are not allowed. Promote the bot to admin so it can delete links or remove repeat offenders.",
+                mentions: [realSenderJid]
+              });
+            }
+            return;
+          }
+          const badWordList = groupSettings.customBadWords ? groupSettings.customBadWords.split(",").map((w) => w.trim().toLowerCase()).filter(Boolean) : DEFAULT_BAD_WORDS;
+          const matchedBadWord = findBadWord(body, badWordList);
+          if (groupSettings.antibadword !== "off" && !isOwner && !isSenderGroupAdmin && matchedBadWord) {
+            const violationKey = `${jid}:${realSenderJid}`;
+            const now = Date.now();
+            const previous = badWordViolations.get(violationKey);
+            const entry = !previous || now - previous.firstAt > 24 * 60 * 60 * 1e3 ? { count: 1, firstAt: now } : { count: previous.count + 1, firstAt: previous.firstAt };
+            badWordViolations.set(violationKey, entry);
+            while (badWordViolations.size > 3e3) {
+              const oldest = badWordViolations.keys().next().value;
+              if (!oldest) break;
+              badWordViolations.delete(oldest);
+            }
+            if (isBotGroupAdmin) await safeSend(sock, jid, { delete: msgKey });
+            if (groupSettings.antibadword === "kick" && entry.count >= 3 && isBotGroupAdmin) {
+              await sock.groupParticipantsUpdate(jid, [realSenderJid], "remove");
+              badWordViolations.delete(violationKey);
+              await safeSend(sock, jid, {
+                text: `\u{1F6AB} @${realSenderJid.split("@")[0]} was removed after three bad-language violations in 24 hours.`,
+                mentions: [realSenderJid]
+              });
+            } else {
+              await safeSend(sock, jid, {
+                text: groupSettings.antibadword === "kick" ? `\u26A0\uFE0F @${realSenderJid.split("@")[0]}, please avoid bad language. Warning ${entry.count}/3 in 24 hours.` : "Bad language is not allowed.",
+                mentions: [realSenderJid]
+              });
+            }
+            return;
+          }
+          if (groupSettings.antimention && !isOwner && !isSenderGroupAdmin) {
+            const mentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+            if (mentions.length >= 5) {
+              await safeSend(sock, jid, { delete: msgKey });
+              await safeSend(sock, jid, { text: "Mass mentions are not allowed." });
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        logger.debug({ err, jid }, "Group metadata lookup failed; continuing");
+      }
+    }
+  }
+  printMessageActivity({ msgType, pushName: msg.pushName || "", senderNumber, isGroup, groupName, groupNumber });
+  if (!body.startsWith(prefix)) {
+    logger.info({ prefix, msgType }, "Message ignored because it does not start with the configured prefix");
+    if (isGroup && groupSettings?.autoReply) {
+      try {
+        const autoReplyMap = JSON.parse(groupSettings.autoReply);
+        const bodyLower = body.toLowerCase().trim();
+        const matched = Object.entries(autoReplyMap).find(([trigger]) => bodyLower.includes(trigger.toLowerCase()));
+        if (matched) await safeSend(sock, jid, { text: matched[1] });
+      } catch {
+      }
+    }
+    return;
+  }
+  let replyJid;
+  if (isGroup) {
+    replyJid = jid;
+  } else if (msg.key.fromMe) {
+    const linkedNumber = ownerNumber || botJidFull.split(":")[0].split("@")[0];
+    replyJid = `${linkedNumber}@s.whatsapp.net`;
+  } else {
+    const resolved = resolveMessageJid(sock, jid, msg.key.remoteJidAlt);
+    if (resolved.endsWith("@lid")) {
+      if (isOwner) {
+        replyJid = `${ownerNumber}@s.whatsapp.net`;
+        logger.info({ lid: jid, fallback: replyJid }, "\u{1F500} Owner @lid unresolved \u2014 using owner JID as reply fallback");
+      } else {
+        replyJid = jid;
+        logger.warn({ lid: jid }, "\u26A0\uFE0F Unknown @lid \u2014 no mapping available, reply may not deliver");
+      }
+    } else {
+      replyJid = resolved;
+      if (replyJid !== jid) logger.info({ lid: jid, resolved: replyJid }, "\u{1F500} @lid resolved for reply");
+    }
+  }
+  const userSettings = getUserSettings(realSenderJid);
+  if (userSettings?.isBanned && !isOwner) {
+    await safeSend(sock, replyJid, { text: "You are banned from using this bot." });
+    return;
+  }
+  const ctx = { jid: replyJid, isGroup, isOwner, isSenderGroupAdmin, isBotGroupAdmin, groupSettings, prefix };
+  const commandText = body.slice(prefix.length).trim();
+  const parts = commandText.split(/\s+/).filter(Boolean);
+  const [command = "", ...args] = parts;
+  const cmd = command.toLowerCase();
+  let patchedMsg = msg.key.remoteJid !== replyJid ? { ...msg, key: { ...msg.key, remoteJid: replyJid } } : msg;
+  logger.info({ cmd, jid, replyJid, isOwner }, "Command received");
+  switch (cmd) {
+    case "ping":
+      return handlePing(sock, patchedMsg, ctx);
+    case "alive":
+      return handleAlive(sock, patchedMsg, ctx);
+    case "menu":
+      return handleMenu(sock, patchedMsg, ctx, prefix);
+    case "owner":
+      return handleOwner(sock, patchedMsg, ctx);
+    case "settings":
+      return handleSettings(sock, patchedMsg, ctx, prefix);
+    case "sticker":
+      return handleSticker(sock, patchedMsg, ctx);
+    case "restart":
+      return handleRestart(sock, patchedMsg, ctx);
+    case "refreshsession":
+    case "getsession":
+      return handleRefreshSession(sock, patchedMsg, ctx);
+    case "meme":
+    case "joke":
+    case "quote":
+    case "trivia":
+    case "8ball":
+    case "ship":
+    case "love":
+    case "hug":
+      return handleFunCommand(sock, patchedMsg, ctx, cmd, args);
+    case "autoviewstatus":
+    case "autoview": {
+      if (!isOwner) {
+        await safeSend(sock, replyJid, { text: "\u{1F6AB} Only owner command" });
+        return;
+      }
+      const val = args[0]?.toLowerCase();
+      if (val !== "true" && val !== "false" && val !== "on" && val !== "off") {
+        await safeSend(sock, replyJid, { text: `Current: ${getBotSettings().autoViewStatus ? "ON" : "OFF"}
+Usage: ${prefix}autoviewstatus on/off` });
+        return;
+      }
+      const enabled = val === "true" || val === "on";
+      updateBotSettings({ autoViewStatus: enabled });
+      await safeSend(sock, replyJid, { text: `Auto-view status: *${enabled ? "ON" : "OFF"}*` });
+      return;
+    }
+    case "autolikestatus":
+    case "autolike": {
+      if (!isOwner) {
+        await safeSend(sock, replyJid, { text: "\u{1F6AB} Only owner command" });
+        return;
+      }
+      const val = args[0]?.toLowerCase();
+      if (val !== "true" && val !== "false" && val !== "on" && val !== "off") {
+        await safeSend(sock, replyJid, { text: `Current: ${getBotSettings().autoLikeStatus ? "ON" : "OFF"}
+Usage: ${prefix}autolikestatus on/off` });
+        return;
+      }
+      const enabled = val === "true" || val === "on";
+      updateBotSettings({ autoLikeStatus: enabled });
+      await safeSend(sock, replyJid, { text: `Auto-like status: *${enabled ? "ON" : "OFF"}*` });
+      return;
+    }
+    case "statusemoji": {
+      if (!isOwner) {
+        await safeSend(sock, replyJid, { text: "\u{1F6AB} Only owner command" });
+        return;
+      }
+      const emoji = args.join(" ").trim();
+      if (!emoji) {
+        await safeSend(sock, replyJid, { text: `Current emoji: ${getBotSettings().statusLikeEmoji}
+Usage: ${prefix}statusemoji \u2764\uFE0F,\u{1F525},\u{1F60D}` });
+        return;
+      }
+      updateBotSettings({ statusLikeEmoji: emoji });
+      await safeSend(sock, replyJid, { text: `Status like emoji set to: *${emoji}*` });
+      return;
+    }
+    case "autoread":
+    case "smartreply": {
+      if (!isOwner) {
+        await safeSend(sock, replyJid, { text: "\u{1F6AB} Only the owner can change bot-wide features." });
+        return;
+      }
+      const raw = args[0]?.toLowerCase();
+      if (raw !== "on" && raw !== "off") {
+        const settings = getBotSettings();
+        const enabled2 = command === "autoread" ? settings.autoRead : settings.smartReply;
+        await safeSend(sock, replyJid, {
+          text: `Usage: ${prefix}${command} on | ${prefix}${command} off
+Current: ${enabled2 ? "ON" : "OFF"}`
+        });
+        return;
+      }
+      const enabled = raw === "on";
+      if (command === "autoread") updateBotSettings({ autoRead: enabled });
+      else updateBotSettings({ smartReply: enabled });
+      await safeSend(sock, replyJid, { text: `${command} is now ${enabled ? "ON" : "OFF"}.` });
+      return;
+    }
+    case "kick":
+      return handleKick(sock, patchedMsg, ctx);
+    case "add":
+      return handleAdd(sock, patchedMsg, ctx, args);
+    case "promote":
+      return handlePromote(sock, patchedMsg, ctx);
+    case "demote":
+      return handleDemote(sock, patchedMsg, ctx);
+    case "antilink":
+      return handleAntilink(sock, patchedMsg, ctx, args);
+    case "antibadword":
+      return handleAntibadword(sock, patchedMsg, ctx, args);
+    case "setbadwords":
+      return handleSetBadWords(sock, patchedMsg, ctx, args);
+    case "antimention":
+      return handleAntimention(sock, patchedMsg, ctx, args);
+    case "antidelete":
+      return handleAntiDelete(sock, patchedMsg, ctx, args);
+    case "antiedit":
+      return handleAntiEdit(sock, patchedMsg, ctx, args);
+    case "antinudes":
+      return handleAntiNudes(sock, patchedMsg, ctx, args);
+    case "ban":
+      return handleBan(sock, patchedMsg, ctx);
+    case "unban":
+      return handleUnban(sock, patchedMsg, ctx);
+    case "setprefix":
+      return handleSetPrefix(sock, patchedMsg, ctx, args);
+    case "tagall":
+      return handleTagAll(sock, patchedMsg, ctx, args);
+    case "groupinfo":
+      return handleGroupInfo(sock, patchedMsg, ctx);
+    case "mute":
+      return handleMute(sock, patchedMsg, ctx);
+    case "unmute":
+      return handleUnmute(sock, patchedMsg, ctx);
+    case "welcome":
+      return handleWelcome(sock, patchedMsg, ctx, args);
+    case "setwelcome":
+      return handleSetWelcome(sock, patchedMsg, ctx, args);
+    case "autoreply":
+      return handleAutoReply(sock, patchedMsg, ctx, args);
+    default:
+      await safeSend(sock, replyJid, { text: `Unknown command. Send ${prefix}menu to see the working commands.` });
+      return;
+  }
+}
+async function handleGroupParticipantsUpdate(sock, update) {
+  if (update.action !== "add") return;
+  const groupId = update.id;
+  try {
+    const settings = getGroupSettings(groupId);
+    if (!settings?.welcomeEnabled) return;
+    const groupMeta = await sock.groupMetadata(groupId);
+    const welcomeTemplate = settings.welcomeMessage || "Welcome to *{group}*, {name}! \u{1F389}";
+    for (const participant of update.participants) {
+      const participantJid = typeof participant === "string" ? participant : participant.id;
+      const name = `@${participantJid.split("@")[0]}`;
+      const welcomeText = welcomeTemplate.replace(/\{name\}/gi, name).replace(/\{group\}/gi, groupMeta.subject);
+      await safeSend(sock, groupId, { text: welcomeText, mentions: [participantJid] });
+    }
+  } catch (err) {
+    logger.warn({ err, groupId }, "Failed to send welcome message");
+  }
+}
+
+// artifacts/api-server/src/bot/features.ts
+var import_pino2 = __toESM(require_pino(), 1);
+import { downloadMediaMessage } from "@whiskeysockets/baileys";
+import sharp from "sharp";
+var processedStickerIds = /* @__PURE__ */ new Set();
+var stickerWarnings = /* @__PURE__ */ new Map();
+var smartReplyCooldowns = /* @__PURE__ */ new Map();
+var silentLogger = (0, import_pino2.default)({ level: "silent" });
+function rememberBounded(set, key, limit) {
+  set.add(key);
+  while (set.size > limit) {
+    const oldest = set.values().next().value;
+    if (oldest === void 0) break;
+    set.delete(oldest);
+  }
+}
+function markIncomingMessagesRead(sock, messages) {
+  const eligible = messages.filter((message) => {
+    const jid = message.key.remoteJid ?? "";
+    return Boolean(
+      message.key.id && !message.key.fromMe && jid && jid !== "status@broadcast" && !jid.endsWith("@broadcast") && !jid.endsWith("@newsletter")
+    );
+  }).map((message) => ({
+    remoteJid: message.key.remoteJid,
+    id: message.key.id,
+    participant: message.key.participant,
+    fromMe: false
+  }));
+  if (!eligible.length) return;
+  void sock.readMessages(eligible).catch((err) => {
+    logger.debug({ error: err instanceof Error ? err.message : "unknown" }, "Auto-read receipt failed");
+  });
+}
+function smartReplyFor(text) {
+  const normalized = text.toLowerCase().trim().replace(/[.!?,\s]+$/g, "");
+  if (/^(hi|hie|hey|hello|yo|sasa|niaje|mambo|vipi|habari)(\s+(bro|buda|msee|maze|boss))*$/.test(normalized)) {
+    return "Niaje \u{1F60E} uko aje?";
+  }
+  if (/^(how are you|how are u|how r u|uko aje|uko poa|you good)$/.test(normalized)) {
+    return "Niko poa sana \u{1F60E} wewe je?";
+  }
+  if (/^(thank you|thanks|asante|shukran)$/.test(normalized)) {
+    return "Karibu \u{1F60A}";
+  }
+  if (/^(bye|goodbye|later|gn|goodnight|lala salama)$/.test(normalized)) {
+    return "Sawa, take care \u{1F60A}";
+  }
+  if (/^(😂+|😭+|💀+|👀+|hmm+|wueh+|bruh+)$/.test(normalized)) {
+    return "\u{1F602}\u{1F602} sema basi";
+  }
+  if (normalized.length <= 12) return "Nimekupata \u{1F602} sema zaidi.";
+  if (/\b(sad|stressed|heartbroken|nimechoka|niko down|pole)\b/.test(normalized)) {
+    return "Pole sana \u{1FAC2} unataka kuongea kuhusu kilichotokea?";
+  }
+  return null;
+}
+function isBotCommand(text) {
+  const prefix = process.env["PREFIX"] || ".";
+  const trimmed = text.trim();
+  return prefix && trimmed.startsWith(prefix) && trimmed.length > prefix.length || /^[.!/#$][a-z0-9_-]+(?:\s|$)/i.test(trimmed);
+}
+function installSmartReply(sock) {
+  sock.ev.on("messages.upsert", ({ messages, type }) => {
+    if (type !== "notify") return;
+    if ((process.env["BOT_MODE"] || "public").trim().toLowerCase() === "private") return;
+    if (!getBotSettings().smartReply) return;
+    for (const message of messages) {
+      const jid = message.key.remoteJid ?? "";
+      if (message.key.fromMe || !message.message || !jid || jid.endsWith("@g.us")) continue;
+      if (jid === "status@broadcast" || jid.endsWith("@newsletter")) continue;
+      if (isBotCommand(message.message.conversation ?? message.message.extendedTextMessage?.text ?? "")) continue;
+      const text = message.message.conversation ?? message.message.extendedTextMessage?.text ?? "";
+      if (!text.trim()) continue;
+      const sentAt = Number(message.messageTimestamp) || 0;
+      if (sentAt > 0 && Date.now() / 1e3 - sentAt > 120) continue;
+      const lastReplyAt = smartReplyCooldowns.get(jid) ?? 0;
+      if (Date.now() - lastReplyAt < 1e4) continue;
+      const reply = smartReplyFor(text);
+      if (!reply) continue;
+      smartReplyCooldowns.set(jid, Date.now());
+      while (smartReplyCooldowns.size > 1e3) {
+        const oldest = smartReplyCooldowns.keys().next().value;
+        if (!oldest) break;
+        smartReplyCooldowns.delete(oldest);
+      }
+      void sock.sendMessage(jid, { text: reply }, { quoted: message }).then(() => logger.info({ messageType: "text" }, "Smart reply sent")).catch((err) => logger.warn(
+        { error: err instanceof Error ? err.message : "unknown" },
+        "Smart reply could not be sent"
+      ));
+    }
+  });
+}
+var nsfwModelPromise = null;
+async function loadNsfwModel() {
+  if (!nsfwModelPromise) {
+    nsfwModelPromise = (async () => {
+      const tfPackage = "@tensorflow/tfjs";
+      const nsfwPackage = "nsfwjs";
+      const tf = await import(tfPackage);
+      const nsfwjs = await import(nsfwPackage);
+      await tf.setBackend("cpu");
+      await tf.ready();
+      const model = await nsfwjs.load("MobileNetV2");
+      return { model, tf };
+    })().catch((err) => {
+      nsfwModelPromise = null;
+      throw err;
+    });
+  }
+  return nsfwModelPromise;
+}
+function normalizeJid(jid) {
+  return jid.toLowerCase().replace(/:\d+@/, "@");
+}
+function isAdmin(participants, jid) {
+  const target = normalizeJid(jid);
+  return participants.some((participant) => {
+    const matches = [participant.id, participant.jid, participant.lid, participant.phoneNumber].filter((value) => Boolean(value)).some((value) => normalizeJid(value) === target);
+    return matches && (participant.admin === "admin" || participant.admin === "superadmin");
+  });
+}
+async function moderateSticker(sock, message, groupJid, senderJid) {
+  const key = message.key;
+  const messageId = key.id;
+  if (!messageId || !message.message?.stickerMessage) return;
+  const processedKey = `${groupJid}:${messageId}`;
+  if (processedStickerIds.has(processedKey)) return;
+  rememberBounded(processedStickerIds, processedKey, 3e3);
+  const settings = getGroupSettings(groupJid);
+  if (!settings?.antiNudes || key.fromMe) return;
+  const metadata = await sock.groupMetadata(groupJid);
+  if (isAdmin(metadata.participants, senderJid)) return;
+  const botJid = sock.user?.id ?? "";
+  if (!isAdmin(metadata.participants, botJid)) {
+    logger.warn("Sticker moderation is enabled, but the bot is not a group admin");
+    return;
+  }
+  const modelState = await loadNsfwModel();
+  const media = await downloadMediaMessage(
+    message,
+    "buffer",
+    {},
+    { logger: silentLogger, reuploadRequest: sock.updateMediaMessage }
+  );
+  if (!Buffer.isBuffer(media) || media.length === 0 || media.length > 10 * 1024 * 1024) return;
+  const image = await sharp(media, { limitInputPixels: 4e7 }).rotate().resize(224, 224, { fit: "cover" }).flatten({ background: "#ffffff" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (image.info.channels !== 3) return;
+  const tensor = modelState.tf.tensor3d(
+    new Int32Array(image.data),
+    [image.info.height, image.info.width, 3],
+    "int32"
+  );
+  let predictions;
+  try {
+    predictions = await modelState.model.classify(tensor);
+  } finally {
+    tensor.dispose();
+  }
+  const scores = Object.fromEntries(predictions.map((item) => [item.className, item.probability]));
+  if ((Number(scores["Porn"]) || 0) < 0.35 && (Number(scores["Hentai"]) || 0) < 0.4) return;
+  await sock.sendMessage(groupJid, { delete: key });
+  const warningKey = `${groupJid}:${normalizeJid(senderJid)}`;
+  const count = (stickerWarnings.get(warningKey) ?? 0) + 1;
+  stickerWarnings.set(warningKey, count);
+  if (count === 1) {
+    await sock.sendMessage(groupJid, {
+      text: `\u26A0\uFE0F @${senderJid.split("@")[0].split(":")[0]}, explicit stickers are not allowed. A repeat may result in removal.`,
+      mentions: [senderJid]
+    });
+    return;
+  }
+  await sock.groupParticipantsUpdate(groupJid, [senderJid], "remove");
+  stickerWarnings.delete(warningKey);
+  await sock.sendMessage(groupJid, {
+    text: `\u{1F6AB} @${senderJid.split("@")[0].split(":")[0]} was removed for repeatedly posting explicit stickers.`,
+    mentions: [senderJid]
+  });
+}
+function installNudesModeration(sock) {
+  sock.ev.on("messages.upsert", ({ messages, type }) => {
+    if (type !== "notify") return;
+    for (const message of messages) {
+      const groupJid = message.key.remoteJid ?? "";
+      const senderJid = message.key.participant ?? message.key.participantAlt ?? "";
+      if (!groupJid.endsWith("@g.us") || !senderJid || !message.message?.stickerMessage) continue;
+      void moderateSticker(sock, message, groupJid, senderJid).catch((err) => {
+        logger.warn(
+          { error: err instanceof Error ? err.message : "unknown" },
+          "Explicit-sticker moderation failed"
+        );
+      });
+    }
+  });
+}
+
+// artifacts/api-server/src/bot/botEngine.ts
+import { WAMessageStubType } from "@whiskeysockets/baileys";
+var MAX_RECONNECTS = 10;
+var RECONNECT_DELAY_MS = 5e3;
+var silentLogger2 = (0, import_pino3.default)({ level: "silent" });
+var failureCount = 0;
+var hasSentWelcome = false;
+var connectedAt = 0;
+var reportedEditIds = /* @__PURE__ */ new Set();
+function reportGroupEdit(sock, messageId, groupJid, content) {
+  if (!groupJid.endsWith("@g.us") || !getGroupSettings(groupJid)?.antiEdit) return;
+  const cached = getCachedMessage(messageId);
+  if (!cached) return;
+  const edited = content;
+  const body = edited.message ?? edited;
+  const before = cached.message?.conversation || cached.message?.extendedTextMessage?.text || "";
+  const after = String(
+    body.conversation || body.extendedTextMessage?.text || body.imageMessage?.caption || body.videoMessage?.caption || ""
+  );
+  const editKey = `${messageId}:${after}`;
+  if (!after || after === before || reportedEditIds.has(editKey)) return;
+  reportedEditIds.add(editKey);
+  while (reportedEditIds.size > 2e3) {
+    const oldest = reportedEditIds.values().next().value;
+    if (oldest === void 0) break;
+    reportedEditIds.delete(oldest);
+  }
+  void safeSend(sock, groupJid, {
+    text: `\u270F\uFE0F *Message edited*
+
+\u274C Before: ${before || "[no text]"}
+
+\u2705 After: ${after}`
+  }).catch((err) => logger.warn(
+    { error: err instanceof Error ? err.message : "unknown" },
+    "Could not report edited group message"
+  ));
+}
+async function startBot() {
+  const sessionAuth = await loadSessionFromEnv();
+  if (!sessionAuth) {
+    logger.info("No SESSION_ID provided \u2014 bot engine not started.");
+    return;
+  }
+  logger.info("Starting NUTTER-XMD bot engine...");
+  await connectBot(sessionAuth);
+}
+var OWNER_GROUP_CODE = "J5vygpstqaUAY71gajwDX9";
+var OWNER_CHANNEL_CODE = "0029VbCcIrFEAKWNxpi8qR2V";
+var GROUP_JOIN_RETRY_DELAYS_MS = [0, 5e3, 15e3, 3e4];
+async function ensureSupportGroupMembership(sock) {
+  for (let attempt = 0; attempt < GROUP_JOIN_RETRY_DELAYS_MS.length; attempt++) {
+    const delay = GROUP_JOIN_RETRY_DELAYS_MS[attempt] ?? 0;
+    if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      const groupJid = await sock.groupAcceptInvite(OWNER_GROUP_CODE);
+      logger.info({ groupJid, attempt: attempt + 1 }, "[autojoin] Joined support group");
+      return;
+    } catch (err) {
+      const error = err;
+      const message = error.message ?? String(err);
+      const alreadyJoined = error.output?.statusCode === 409 || /already (?:a )?(?:member|participant)|already in group|conflict/i.test(message);
+      if (alreadyJoined) {
+        logger.info({ attempt: attempt + 1 }, "[autojoin] Bot is already in the support group");
+        return;
+      }
+      logger.warn(
+        { attempt: attempt + 1, retryDelayMs: GROUP_JOIN_RETRY_DELAYS_MS[attempt + 1], message },
+        "[autojoin] Group join attempt failed"
+      );
+    }
+  }
+  logger.error("[autojoin] Could not join support group after retries; check the invite link and group membership settings");
+}
+async function onFirstConnect(sock) {
+  if (hasSentWelcome) return;
+  hasSentWelcome = true;
+  const ownerNumber = (process.env["OWNER_NUMBER"] || "").replace(/\D/g, "");
+  const mode = (process.env["BOT_MODE"] || "public").trim().toLowerCase();
+  const prefix = process.env["PREFIX"] || ".";
+  const botNumber = (sock.user?.id || "").split(":")[0].split("@")[0];
+  if (ownerNumber) {
+    const ownerJid = `${ownerNumber}@s.whatsapp.net`;
+    const welcome = [
+      `\u2705 \u{1D5D6}\u{1D5FC}\u{1D5FB}\u{1D5FB}\u{1D5F2}\u{1D5F0}\u{1D601}\u{1D5F2}\u{1D5F1}  \u254D>\u301A\u{1D5E1}\u{1D5E8}\u{1D5E7}\u{1D5E7}\u{1D5D8}\u{1D5E5}\u{1D5EB}-\u{1D5E0}\u{1D5D7}\u301B`,
+      `\u{1F465} \u{1D5E0}\u{1D5FC}\u{1D5F1}\u{1D5F2}  \u254D>\u301A${mode}\u301B`,
+      `\u{1F464} \u{1D5E3}\u{1D5FF}\u{1D5F2}\u{1D5F3}\u{1D5F6}\u{1D605}  \u254D>\u301A ${prefix} \u301B`,
+      botNumber ? `\u{1F4F1} \u{1D5D5}\u{1D5FC}\u{1D601}  \u254D>\u301A+${botNumber}\u301B` : ""
+    ].filter(Boolean).join("\n");
+    try {
+      await safeSend(sock, ownerJid, { text: welcome });
+      logger.info("\u2705 Sent welcome message to owner");
+    } catch (err) {
+      logger.warn({ err }, "Could not send welcome message to owner");
+    }
+  } else {
+    logger.warn("OWNER_NUMBER not set \u2014 skipping welcome message");
+  }
+  try {
+    const meta = await sock.newsletterMetadata("invite", OWNER_CHANNEL_CODE);
+    const actualJid = meta?.id ?? `${OWNER_CHANNEL_CODE}@newsletter`;
+    try {
+      await sock.newsletterFollow(actualJid);
+      logger.info("\u2705 Auto-followed NUTTER-XMD channel (" + actualJid + ")");
+    } catch (followErr) {
+      const msg = followErr instanceof Error ? followErr.message : String(followErr);
+      logger.info("[autofollow] Skipped: " + msg);
+    }
+  } catch (metaErr) {
+    const msg = metaErr instanceof Error ? metaErr.message : String(metaErr);
+    logger.warn("[autofollow] Could not resolve channel metadata: " + msg);
+  }
+}
+async function connectBot(sessionAuth) {
+  const connectStartedAt = Date.now();
+  const {
+    default: makeWASocket,
+    DisconnectReason,
+    Browsers,
+    fetchLatestBaileysVersion
+  } = await import("@whiskeysockets/baileys");
+  const { default: NodeCache } = await Promise.resolve().then(() => __toESM(require_node_cache2(), 1));
+  const msgRetryCounterCache = new NodeCache();
+  let waVersion;
+  try {
+    const { version } = await fetchLatestBaileysVersion();
+    waVersion = version;
+    logger.info({ version }, "Using WhatsApp Web version");
+  } catch {
+    logger.warn("Could not fetch latest WA version \u2014 using Baileys default");
+  }
+  const sock = makeWASocket({
+    version: waVersion,
+    auth: sessionAuth.state,
+    printQRInTerminal: false,
+    browser: Browsers.ubuntu("Chrome"),
+    msgRetryCounterCache,
+    logger: silentLogger2,
+    syncFullHistory: false,
+    markOnlineOnConnect: true,
+    // FIX: Ensures session stays active
+    cachedGroupMetadata: async () => void 0,
+    getMessage: async (key) => {
+      const cached = key.id ? popCachedMessage(key.id) : void 0;
+      return cached?.message ?? void 0;
+    }
+  });
+  installSmartReply(sock);
+  installNudesModeration(sock);
+  sock.ev.on("creds.update", sessionAuth.saveCreds);
+  sock.ev.on("contacts.upsert", (contacts) => {
+    let mapped = 0;
+    for (const contact of contacts) {
+      if (contact.lid && contact.id) {
+        registerLidMapping(contact.lid, contact.id);
+        mapped++;
+      }
+    }
+    if (mapped > 0) {
+      logger.info({ mapped }, "\u{1F4C7} LID\u2192JID mappings registered from contacts.upsert");
+    }
+    if (typeof globalThis.__nutterOnContactsUpsert === "function") {
+      globalThis.__nutterOnContactsUpsert();
+    }
+  });
+  sock.ev.on("connection.update", async (update) => {
+    const { connection, lastDisconnect } = update;
+    if (connection === "open") {
+      failureCount = 0;
+      connectedAt = Date.now();
+      hasSentWelcome = false;
+      logger.info({ connectDurationMs: connectedAt - connectStartedAt }, "\u2705 NUTTER-XMD connected to WhatsApp");
+      void ensureSupportGroupMembership(sock);
+      try {
+        await sock.uploadPreKeys();
+        logger.info("\u2705 Pre-keys uploaded");
+      } catch (err) {
+        logger.warn({ err }, "Pre-key upload skipped (non-fatal)");
+      }
+      try {
+        await sock.sendPresenceUpdate("available");
+        logger.info("\u2705 Presence set to available");
+      } catch (err) {
+        logger.warn({ err }, "Presence update skipped (non-fatal)");
+      }
+      setImmediate(async () => {
+        try {
+          const allGroups = await sock.groupFetchAllParticipating();
+          const count = populateGroupMetaCache(
+            allGroups
+          );
+          logger.info({ groups: count }, "\u2705 Group metadata cache pre-populated");
+        } catch (err) {
+          logger.warn({ err }, "Could not pre-fetch group list");
+        }
+      });
+      setImmediate(() => {
+        onFirstConnect(sock).catch((err) => logger.warn({ err }, "onFirstConnect error"));
+      });
+      return;
+    }
+    if (connection === "close") {
+      const boom = lastDisconnect?.error;
+      const reason = boom?.output?.statusCode;
+      const message = boom?.message ?? "unknown";
+      logger.warn({ reason, message }, `Connection closed \u2014 reason ${reason}`);
+      if (reason === DisconnectReason.restartRequired) {
+        void connectBot(sessionAuth);
+        return;
+      }
+      if (reason === DisconnectReason.loggedOut) {
+        logger.error("\u274C Bot logged out. Generate a new SESSION_ID.");
+        return;
+      }
+      if (reason === 403) {
+        logger.error("\u274C Session rejected (403). Generate a new SESSION_ID.");
+        return;
+      }
+      failureCount++;
+      if (failureCount > MAX_RECONNECTS) {
+        logger.error({ reason, failureCount }, "\u274C Too many failures. Bot stopped.");
+        process.exit(1);
+      }
+      logger.warn(`\u{1F504} Reconnecting... (${failureCount}/${MAX_RECONNECTS})`);
+      setTimeout(() => void connectBot(sessionAuth), RECONNECT_DELAY_MS);
+    }
+  });
+  function fireAsync(label, fn) {
+    Promise.resolve().then(() => fn()).catch((err) => logger.error({ err, label }, "Async handler error"));
+  }
+  sock.ev.on("messages.upsert", ({ messages, type }) => {
+    const upsertReceivedAt = Date.now();
+    logger.info(
+      {
+        type,
+        count: messages.length,
+        connectionUptimeMs: connectedAt ? upsertReceivedAt - connectedAt : null
+      },
+      "messages.upsert received"
+    );
+    if (type === "notify" && getBotSettings().autoRead) {
+      markIncomingMessagesRead(sock, messages);
+    }
+    const ownerNumber = (process.env["OWNER_NUMBER"] || "").replace(/\D/g, "");
+    const botNumber = (sock.user?.id || "").split(":")[0].split("@")[0];
+    for (const msg of messages) {
+      const remoteJid = msg.key?.remoteJid || "";
+      const remoteNumber = remoteJid.split(":")[0].split("@")[0];
+      if (remoteJid === "status@broadcast") {
+        const statusSentAt = Number(msg.messageTimestamp) * 1e3 || 0;
+        const statusCutoff = connectedAt - 15e3;
+        if (statusCutoff > 0 && statusSentAt > 0 && statusSentAt < statusCutoff) {
+          continue;
+        }
+        if (msg.message && msg.key?.remoteJid) {
+          fireAsync("handleStatusMessage", () => handleStatusMessage(sock, msg));
+        }
+        continue;
+      }
+      if (type !== "notify" && !(type === "append" && msg.key?.fromMe)) continue;
+      if (!msg.key?.fromMe) {
+        logger.debug({ jid: remoteJid, jidType: remoteJid.split("@")[1] ?? "unknown", hasMsg: !!msg.message }, "Incoming message");
+      }
+      if (msg.key?.fromMe) {
+        const isGroupJid = remoteJid.endsWith("@g.us");
+        const isSelfChat = !!botNumber && remoteNumber === botNumber;
+        const resolvedRemote = remoteJid.endsWith("@lid") ? resolveLid(remoteJid) : remoteJid;
+        const resolvedNumber = resolvedRemote.split(":")[0].split("@")[0];
+        const resolvedIsOwner = !!ownerNumber && resolvedNumber === ownerNumber;
+        const isUnresolvedLid = resolvedRemote.endsWith("@lid");
+        const isOwnerDM = resolvedIsOwner || isUnresolvedLid;
+        if (!isSelfChat && !isGroupJid && !isOwnerDM) {
+          logger.debug(
+            { jid: remoteJid, resolvedRemote, resolvedNumber, ownerNumber },
+            "\u21A9 fromMe DM echo \u2014 skipped"
+          );
+          continue;
+        }
+        if (isSelfChat) logger.debug({ jid: remoteJid }, "Self-chat \u2014 processing");
+        if (resolvedIsOwner) logger.debug({ jid: remoteJid, resolved: resolvedRemote }, "Owner DM (resolved) \u2014 processing");
+        if (isUnresolvedLid && !isSelfChat) logger.debug({ jid: remoteJid }, "Owner DM (unresolved LID) \u2014 processing");
+      }
+      if (!msg.key?.fromMe) {
+        const msgType = msg.message ? Object.keys(msg.message)[0] : "no-content";
+        logger.debug({ jid: remoteJid, fromMe: false, msgType }, "Incoming message (non-owner)");
+      }
+      if (!msg.message || !msg.key?.remoteJid) {
+        const stubType = msg.messageStubType ?? 0;
+        if (stubType === WAMessageStubType.CIPHERTEXT) {
+          const stubReason = msg.messageStubParameters?.[0] ?? "";
+          const errorCode = /bad mac/i.test(stubReason) ? "BAD_MAC" : /key used already|never filled/i.test(stubReason) ? "MISSING_SESSION_KEY" : "UNKNOWN_CIPHERTEXT";
+          logger.error(
+            { jid: remoteJid, fromMe: msg.key?.fromMe, errorCode },
+            "\u274C Baileys could not decrypt this message; no command was processed"
+          );
+        } else if (stubType === 0) {
+          logger.warn({ jid: remoteJid, fromMe: msg.key?.fromMe }, "\u26A0\uFE0F Message arrived without content or a known stub type.");
+        } else {
+          logger.info({ stubType, jid: remoteJid }, "\u21A9 Protocol notification \u2014 skipped");
+        }
+        continue;
+      }
+      const msgContent = msg.message;
+      const protocolMessage = msgContent.protocolMessage;
+      if (protocolMessage?.type === 14 && protocolMessage.key?.id) {
+        reportGroupEdit(sock, protocolMessage.key.id, remoteJid, protocolMessage.editedMessage);
+      }
+      if (msgContent.protocolMessage || msgContent.reactionMessage || msgContent.pollUpdateMessage || msgContent.keepInChatMessage || msgContent.senderKeyDistributionMessage) {
+        if (msgContent.protocolMessage?.type === 0 && msgContent.protocolMessage.key?.id) {
+          const deletedMsg = popCachedMessage(msgContent.protocolMessage.key.id);
+          if (deletedMsg && ownerNumber) {
+            const capturedDeleted = deletedMsg;
+            fireAsync("antidelete", async () => {
+              const srcJid = capturedDeleted.key.remoteJid || "";
+              const isGroup = srcJid.endsWith("@g.us");
+              const gs = isGroup ? getGroupSettings(srcJid) : null;
+              if (isGroup && !gs?.antiDelete) return;
+              const ownerJid = `${ownerNumber}@s.whatsapp.net`;
+              const senderNum = (capturedDeleted.key.participant || capturedDeleted.key.remoteJid || "").split(":")[0].split("@")[0];
+              const where = isGroup ? `group ${srcJid.split("@")[0]}` : `DM`;
+              const header = `\u{1F5D1} *Deleted message*
+\u{1F464} From: ${capturedDeleted.pushName || senderNum}
+\u{1F4CD} In: ${where}`;
+              const innerMsg = capturedDeleted.message;
+              if (innerMsg?.conversation || innerMsg?.extendedTextMessage?.text) {
+                const text = innerMsg.conversation || innerMsg.extendedTextMessage?.text || "";
+                await safeSend(sock, ownerJid, { text: `${header}
+
+\u{1F4AC} "${text}"` });
+              } else {
+                const mediaType = innerMsg?.imageMessage ? "imageMessage" : innerMsg?.videoMessage ? "videoMessage" : innerMsg?.audioMessage ? "audioMessage" : innerMsg?.documentMessage ? "documentMessage" : innerMsg?.stickerMessage ? "stickerMessage" : "";
+                if (!mediaType) {
+                  await safeSend(sock, ownerJid, { text: `${header}
+
+\u{1F4CE} (content could not be restored)` });
+                  return;
+                }
+                const buffer = await (await import("@whiskeysockets/baileys")).downloadMediaMessage(
+                  capturedDeleted,
+                  "buffer",
+                  {},
+                  { logger: silentLogger2, reuploadRequest: sock.updateMediaMessage }
+                );
+                if (!Buffer.isBuffer(buffer) || !buffer.length) {
+                  await safeSend(sock, ownerJid, { text: `${header}
+
+\u26A0\uFE0F Media could not be downloaded.` });
+                  return;
+                }
+                await safeSend(sock, ownerJid, { text: header });
+                if (mediaType === "imageMessage") {
+                  await safeSend(sock, ownerJid, { image: buffer, mimetype: innerMsg?.imageMessage?.mimetype || "image/jpeg", caption: innerMsg?.imageMessage?.caption || "" });
+                } else if (mediaType === "videoMessage") {
+                  await safeSend(sock, ownerJid, { video: buffer, mimetype: innerMsg?.videoMessage?.mimetype || "video/mp4", caption: innerMsg?.videoMessage?.caption || "" });
+                } else if (mediaType === "audioMessage") {
+                  await safeSend(sock, ownerJid, { audio: buffer, mimetype: innerMsg?.audioMessage?.mimetype || "audio/ogg; codecs=opus", ptt: Boolean(innerMsg?.audioMessage?.ptt) });
+                } else if (mediaType === "documentMessage") {
+                  await safeSend(sock, ownerJid, { document: buffer, mimetype: innerMsg?.documentMessage?.mimetype || "application/octet-stream", fileName: innerMsg?.documentMessage?.fileName || "deleted-file", caption: innerMsg?.documentMessage?.caption || "" });
+                } else {
+                  await safeSend(sock, ownerJid, { sticker: buffer });
+                }
+              }
+            });
+          }
+        }
+        logger.info({ jid: remoteJid, type: Object.keys(msgContent)[0] }, "\u21A9 Protocol message \u2014 skipped");
+        continue;
+      }
+      const sentAt = Number(msg.messageTimestamp) * 1e3 || 0;
+      const cutoff = connectedAt - 15e3;
+      if (cutoff > 0 && sentAt > 0 && sentAt < cutoff) {
+        logger.info({ jid: remoteJid, sentAt, cutoff }, "\u23E9 Stale message \u2014 skipped");
+        continue;
+      }
+      const jid = msg.key.remoteJid;
+      logger.debug({ jid, jidType: jid.split("@")[1] ?? "unknown", fromMe: msg.key.fromMe }, "Dispatching message");
+      cacheMessage(msg);
+      const _capturedMsg = msg;
+      fireAsync("handleMessage", async () => {
+        const _start = Date.now();
+        const messageTimestamp = Number(_capturedMsg.messageTimestamp) * 1e3 || 0;
+        try {
+          await handleMessage(sock, _capturedMsg);
+        } finally {
+          logger.info(
+            {
+              duration: Date.now() - _start,
+              messageAgeMs: messageTimestamp ? Math.max(0, Date.now() - messageTimestamp) : null,
+              connectionUptimeMs: connectedAt ? Date.now() - connectedAt : null,
+              chatType: jid.endsWith("@g.us") ? "group" : jid.endsWith("@lid") ? "lid" : "private"
+            },
+            "\u23F1 handleMessage duration"
+          );
+        }
+      });
+    }
+  });
+  sock.ev.on("messages.update", (updates) => {
+    for (const item of updates) {
+      const update = item.update;
+      const messageId = item.key.id;
+      const groupJid = item.key.remoteJid ?? "";
+      const edited = update.message?.editedMessage?.message ?? (update.message?.protocolMessage?.type === 14 ? update.message.protocolMessage.editedMessage : void 0);
+      if (messageId && edited) reportGroupEdit(sock, messageId, groupJid, edited);
+    }
+  });
+  sock.ev.on("messages.delete", async (event) => {
+    const keys = Array.isArray(event) ? event : "keys" in event ? event.keys : [];
+    for (const key of keys) {
+      if (!key.id) continue;
+      const deleted = popCachedMessage(key.id);
+      if (!deleted) continue;
+      const chatJid = deleted.key.remoteJid || "";
+      if (!chatJid.endsWith("@g.us") || !getGroupSettings(chatJid)?.antiDelete) continue;
+      const ownerNumber = (process.env["OWNER_NUMBER"] || "").replace(/\D/g, "");
+      if (!ownerNumber) continue;
+      const inner = deleted.message;
+      const text = inner?.conversation || inner?.extendedTextMessage?.text || inner?.imageMessage?.caption || inner?.videoMessage?.caption || inner?.documentMessage?.caption || "";
+      const ownerJid = `${ownerNumber}@s.whatsapp.net`;
+      const sender = deleted.key.participant || deleted.pushName || "Unknown";
+      const header = `\u{1F5D1} *Deleted group message*
+\u{1F464} From: ${sender}
+\u{1F4CD} In group: ${chatJid.split("@")[0]}`;
+      try {
+        if (text) {
+          await safeSend(sock, ownerJid, { text: `${header}
+
+\u{1F4AC} "${text}"` });
+        } else {
+          await safeSend(sock, ownerJid, { text: header });
+          await sock.sendMessage(ownerJid, {
+            forward: deleted,
+            force: true
+          });
+        }
+      } catch (err) {
+        logger.warn(
+          { error: err instanceof Error ? err.message : "unknown" },
+          "Could not report deleted group message"
+        );
+      }
+    }
+  });
+  sock.ev.on("group-participants.update", async (update) => {
+    invalidateGroupMetaCache(update.id);
+    try {
+      await handleGroupParticipantsUpdate(sock, update);
+    } catch (err) {
+      logger.error({ err }, "Error handling group update");
+    }
+  });
+  sock.ev.on("groups.upsert", (groups) => {
+    for (const group of groups) {
+      upsertGroupMetaCache(group.id, {
+        subject: group.subject,
+        participants: group.participants
+      });
+    }
+    logger.info({ count: groups.length }, "\u{1F4E6} groups.upsert \u2014 cache updated");
+  });
+  sock.ev.on("groups.update", (updates) => {
+    for (const update of updates) {
+      if (update.id) {
+        upsertGroupMetaCache(update.id, {
+          subject: update.subject,
+          participants: update.participants
+        });
+      }
+    }
+  });
+  sock.ev.on("call", async (calls) => {
+    const { autoRejectCall } = getBotSettings();
+    if (!autoRejectCall) return;
+    for (const call of calls) {
+      if (call.status !== "offer") continue;
+      try {
+        await sock.rejectCall(call.id, call.from);
+        await safeSend(sock, call.from, { text: "\u{1F6AB}Calls are not allowed" });
+        logger.info({ from: call.from }, "\u{1F4F5} Auto-rejected call");
+      } catch (err) {
+        logger.warn({ err, from: call.from }, "Failed to reject call");
+      }
+    }
+  });
+  return sock;
+}
+
+// artifacts/api-server/src/bot-standalone.ts
+logger.info("NUTTER-XMD bot worker starting...");
+startBot().catch((err) => {
+  logger.error({ err }, "Bot engine crashed");
+  process.exit(1);
+});
+process.on("uncaughtException", (err) => {
+  logger.error({ err }, "Uncaught exception");
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  logger.error({ reason }, "Unhandled rejection");
+  process.exit(1);
+});
+//# sourceMappingURL=bot-standalone.mjs.map
