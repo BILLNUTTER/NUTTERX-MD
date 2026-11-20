@@ -1,6 +1,6 @@
 {
   "name": "NUTTER-XMD",
-  "description": "NUTTER-XMD — A powerful WhatsApp multi-device bot. Deploy your own instance.",
+  "description": "NUTTER-XMD â€” A powerful WhatsApp multi-device bot. Deploy your own instance.",
   "keywords": [
     "whatsapp",
     "bot",
@@ -17,7 +17,7 @@
       "required": true
     },
     "OWNER_NUMBER": {
-      "description": "Your WhatsApp number in international format — no spaces, no + (e.g. 254712345678). Only this number can use owner commands.",
+      "description": "Your WhatsApp number in international format â€” no spaces, no + (e.g. 254712345678). Only this number can use owner commands.",
       "required": true
     },
     "BOT_NAME": {
@@ -46,8 +46,8 @@
       "required": false
     },
     "STATUS_LIKE_EMOJI": {
-      "description": "Emoji(s) used when auto-liking statuses. Comma-separate multiple for random picks (e.g. ❤️,🔥,😍).",
-      "value": "❤️",
+      "description": "Emoji(s) used when auto-liking statuses. Comma-separate multiple for random picks (e.g. â¤ï¸,ðŸ”¥,ðŸ˜).",
+      "value": "â¤ï¸",
       "required": false
     },
     "AUTO_REJECT_CALL": {
@@ -74,10 +74,6 @@
       "description": "Default antidelete setting for all groups. false = off. Can be overridden per group with .antidelete on/off.",
       "value": "true",
       "required": false
-    },
-    "ADMIN_PASSWORD": {
-      "description": "Password used to access the admin dashboard.",
-      "required": true
     }
   },
   "formation": {

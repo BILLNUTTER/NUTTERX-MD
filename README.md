@@ -6,7 +6,7 @@ A powerful WhatsApp multi-device bot by [@nutterxtech](https://github.com/nutter
 
 Deploy the pairing website first and use it to link your WhatsApp account and generate your SESSION_ID.
 
-**Pairing website:** To be updated after deployment.
+**Pairing website:** https://nutterx-md-pairing-7092d0b8e236.herokuapp.com/
 
 ## Deploy Your Own Bot
 
@@ -35,3 +35,4 @@ Each deployment creates a separate bot instance. You can repeat this process wit
 ## Credits
 
 Developed by [@nutterxtech](https://github.com/nutterxtech).
+
