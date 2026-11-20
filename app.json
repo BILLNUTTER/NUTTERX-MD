@@ -74,6 +74,10 @@
       "description": "Default antidelete setting for all groups. false = off. Can be overridden per group with .antidelete on/off.",
       "value": "true",
       "required": false
+    },
+    "ADMIN_PASSWORD": {
+      "description": "Password used to access the admin dashboard.",
+      "required": true
     }
   },
   "formation": {
