@@ -1,20 +1,23 @@
 {
-  "name": "nutterx-md",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
   "engines": {
     "node": "20.x"
   },
   "packageManager": "pnpm@10.26.1",
   "scripts": {
-    "postinstall": "node patch-baileys.mjs",
-    "start": "node --enable-source-maps artifacts/api-server/dist/index.mjs"
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "heroku-postbuild": "node patch-baileys.mjs && pnpm --filter @workspace/nutter-xmd run build && pnpm --filter @workspace/api-server run build"
   },
-  "dependencies": {
-    "@tensorflow/tfjs": "4.22.0",
-    "@whiskeysockets/baileys": "7.0.0-rc14",
-    "nsfwjs": "4.4.0",
-    "sharp": "0.34.5"
+  "private": true,
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "4.59.0",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.2.1",
+    "lightningcss-win32-x64-msvc": "1.31.1",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
   }
 }
