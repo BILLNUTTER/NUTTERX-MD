@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "nutterx-md",
   "version": "1.0.0",
   "private": true,
@@ -7,7 +7,6 @@
     "node": "22.x"
   },
   "scripts": {
-    "build": "node build.js",
     "start": "node pairing/server.js"
   },
   "dependencies": {
