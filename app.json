@@ -1,0 +1,34 @@
+{
+  "name": "NUTTERX-MD",
+  "description": "WhatsApp Bot Engine",
+  "repository": "https://github.com/your-username/your-repo",
+  "root": "bot/",
+  "keywords": ["whatsapp", "bot", "baileys"],
+  "env": {
+    "SESSION_ID": {
+      "description": "Paste the Session ID generated from the pairing site.",
+      "required": true
+    },
+    "MODE": {
+      "description": "Bot mode: public or private",
+      "value": "public",
+      "required": false
+    },
+    "PREFIX": {
+      "description": "Command prefix",
+      "value": ".",
+      "required": false
+    }
+  },
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
