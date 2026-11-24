@@ -1,387 +1,805 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NUTTERX-MD · Session Generator</title>
+  <meta name="theme-color" content="#080b10">
+  <title>NUTTERX-MD | WhatsApp Pairing</title>
+
   <style>
     :root {
-      --bg: #0f1115;
-      --card: #1a1d24;
-      --border: #2a2f3a;
-      --text: #e6e9ef;
-      --muted: #8b93a3;
-      --accent: #25d366;
-      --accent-dim: #1da851;
-      --danger: #e5534b;
-      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      --bg: #080b10;
+      --panel: #111720;
+      --panel2: #17212c;
+      --green: #25d366;
+      --green2: #16a34a;
+      --text: #f5f7fa;
+      --muted: #9aa7b5;
+      --border: rgba(255,255,255,.09);
+      --red: #ff5555;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      margin: 0;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at 20% 0%, #1b2230 0%, var(--bg) 55%);
+      background:
+        radial-gradient(ellipse at top, rgba(37,211,102,.12), transparent 45%),
+        var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 25px 15px;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 470px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 27px;
+    }
+
+    .logo {
+      width: 70px;
+      height: 70px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #25d366, #087c40);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 15px;
+      font-size: 29px;
+      font-weight: 900;
+      color: #06140b;
+      box-shadow: 0 0 35px rgba(37,211,102,.2);
+    }
+
+    .brand h1 {
+      font-size: 28px;
+      letter-spacing: 2px;
+      font-weight: 900;
+    }
+
+    .brand h1 span {
+      color: var(--green);
+    }
+
+    .brand p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .card {
-      width: 100%;
-      max-width: 460px;
-      background: var(--card);
+      background: rgba(17,23,32,.96);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 20px 50px rgba(0,0,0,.45);
+      border-radius: 19px;
+      padding: 25px;
+      box-shadow: 0 20px 65px rgba(0,0,0,.4);
     }
 
-    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-
-    .brand-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 9px;
     }
 
-    h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
-
-    .subtitle { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
-
-    label {
-      display: block; font-size: 12px; color: var(--muted);
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px;
+    .description {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 24px;
     }
 
-    input {
-      width: 100%; padding: 12px 14px; background: #12151b;
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-size: 15px; font-family: var(--mono);
-      outline: none; transition: border-color .15s;
+    .field-label {
+      display: block;
+      font-size: 12px;
+      color: #c4ced8;
+      margin-bottom: 9px;
+      font-weight: bold;
     }
 
-    input:focus { border-color: var(--accent); }
-
-    .row { display: flex; gap: 10px; margin-top: 14px; }
-
-    button {
-      flex: 1; padding: 12px 14px; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: transform .08s, background .15s;
-      color: #0b0e13; background: var(--accent);
+    .input {
+      width: 100%;
+      background: #090e15;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px;
+      color: white;
+      outline: none;
+      transition: .2s;
     }
 
-    button:hover { background: var(--accent-dim); }
-    button:active { transform: scale(.98); }
-    button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    button.secondary:hover { background: #232733; }
-    button:disabled { opacity: .5; cursor: not-allowed; }
+    .input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(37,211,102,.1);
+    }
 
-    #result { margin-top: 22px; }
+    .hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 9px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 22px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 14px 10px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 13px;
+      transition: .2s;
+    }
+
+    .btn-code {
+      background: var(--green);
+      color: #07150b;
+    }
+
+    .btn-qr {
+      background: var(--panel2);
+      color: white;
+      border: 1px solid var(--border);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    #result {
+      margin-top: 18px;
+    }
 
     .panel {
-      background: #12151b; border: 1px solid var(--border);
-      border-radius: 12px; padding: 18px;
+      padding: 19px;
+      background: #0a1018;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      text-align: center;
+      overflow-wrap: anywhere;
     }
 
     .panel h3 {
-      margin: 0 0 12px; font-size: 13px; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .6px; font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 14px;
     }
 
-    .code {
-      font-family: var(--mono); font-size: 26px; font-weight: 700;
-      letter-spacing: 6px; color: var(--accent); text-align: center;
-      padding: 14px 0; background: #0b0e13; border-radius: 10px;
-      border: 1px dashed var(--border); margin: 0 0 12px;
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      color: var(--muted);
+      font-size: 13px;
     }
-
-    .hint { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0; }
-
-    .hint code {
-      background: #232733; padding: 1px 6px; border-radius: 4px;
-      font-family: var(--mono); font-size: 11px;
-    }
-
-    .qr-wrap { text-align: center; }
-    .qr-wrap img {
-      width: 260px; height: 260px; border-radius: 12px;
-      background: #fff; padding: 8px;
-    }
-
-    .session-box { display: flex; gap: 8px; align-items: stretch; margin: 10px 0; }
-
-    .session-input {
-      flex: 1; font-family: var(--mono); font-size: 11px;
-      line-height: 1.5; word-break: break-all; background: #0b0e13;
-      border: 1px solid var(--border); border-radius: 10px;
-      padding: 12px; color: #b9c2d0; resize: none;
-      height: 90px; overflow-y: auto; outline: none;
-    }
-
-    .copy-btn {
-      flex: 0 0 auto; padding: 0 18px; border: none; border-radius: 10px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      color: #0b0e13; background: var(--accent); transition: background .15s;
-    }
-
-    .copy-btn:hover { background: var(--accent-dim); }
-    .copy-btn.copied { background: #4caf50; color: #fff; }
-
-    .status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
     .spinner {
-      width: 14px; height: 14px; border: 2px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%;
+      width: 19px;
+      height: 19px;
+      border: 2px solid #34414e;
+      border-top-color: var(--green);
+      border-radius: 50%;
       animation: spin .8s linear infinite;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .error { color: var(--danger); font-size: 13px; line-height: 1.6; margin: 0; }
-
-    .success-badge {
-      display: inline-block; font-size: 12px; font-weight: 600;
-      color: #0b0e13; background: var(--accent);
-      padding: 3px 10px; border-radius: 999px; margin-bottom: 10px;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    /* Toast Notification Styles */
+    .code {
+      color: var(--green);
+      font-size: 27px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      padding: 17px 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .qr-wrap img {
+      display: block;
+      width: 100%;
+      max-width: 260px;
+      margin: 12px auto;
+      background: white;
+      padding: 9px;
+      border-radius: 10px;
+    }
+
+    .success-badge {
+      display: inline-block;
+      color: #07150b;
+      background: var(--green);
+      padding: 7px 13px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 900;
+      margin-bottom: 15px;
+    }
+
+    .session-box {
+      position: relative;
+      margin-top: 12px;
+    }
+
+    .session-input {
+      width: 100%;
+      min-height: 125px;
+      resize: vertical;
+      background: #050a10;
+      color: #b9f6d0;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 13px;
+      font-size: 10px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .copy-btn {
+      width: 100%;
+      margin-top: 10px;
+      background: var(--green);
+      color: #06140b;
+      padding: 13px;
+      border: none;
+      border-radius: 9px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .copy-btn.copied {
+      background: #168f4b;
+      color: white;
+    }
+
+    .error {
+      color: var(--red);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 11px;
+      color: #687685;
+    }
+
     #toast-container {
       position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 18px;
+      right: 18px;
       z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      pointer-events: none;
+      display: grid;
+      gap: 9px;
     }
 
     .toast {
-      background: var(--card);
-      color: var(--text);
-      padding: 12px 20px;
-      border-radius: 8px;
-      border-left: 4px solid var(--danger);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      font-size: 14px;
-      font-weight: 500;
-      opacity: 0;
-      transform: translateY(-20px);
-      animation: slideIn 0.3s forwards, fadeOut 0.3s 2.7s forwards;
-      pointer-events: auto;
+      background: #17232c;
+      color: white;
+      border: 1px solid rgba(37,211,102,.35);
+      border-radius: 9px;
+      padding: 13px 17px;
+      font-size: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.3);
+      animation: fade .2s ease;
+      max-width: 300px;
     }
 
-    @keyframes slideIn {
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(-7px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes fadeOut {
-      to { opacity: 0; transform: translateY(-20px); }
+    @media(max-width:380px) {
+      .card { padding: 18px; }
+      .brand h1 { font-size: 24px; }
+      .buttons { grid-template-columns: 1fr; }
     }
   </style>
 </head>
+
 <body>
-  <!-- Toast Container -->
+
   <div id="toast-container"></div>
 
-  <main class="card">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      <h1>NUTTERX-MD</h1>
-    </div>
-    <p class="subtitle">Generate a session ID to deploy your bot on Heroku.</p>
+  <main class="container">
 
-    <label for="phone">WhatsApp phone number</label>
-    <input id="phone" placeholder="e.g. 15551234567" autocomplete="off" />
+    <header class="brand">
+      <div class="logo">N</div>
+      <h1>NUTTERX<span>-MD</span></h1>
+      <p>WhatsApp Multi-Device Pairing Portal</p>
+    </header>
 
-    <div class="row">
-      <button id="btnCode" onclick="startPairing('code')">Get pairing code</button>
-      <button id="btnQr" class="secondary" onclick="startPairing('qr')">Use QR code</button>
-    </div>
+    <section class="card">
 
-    <div id="result"></div>
+      <h2>Connect WhatsApp</h2>
+
+      <p class="description">
+        Link your WhatsApp account using a pairing code
+        or scan a QR code to generate your NUTTERX-MD session.
+      </p>
+
+      <label class="field-label" for="phone">
+        WHATSAPP PHONE NUMBER
+      </label>
+
+      <input
+        id="phone"
+        class="input"
+        type="tel"
+        placeholder="2547XXXXXXXX"
+        autocomplete="tel"
+      >
+
+      <p class="hint">
+        Include your country code. For example,
+        254712345678. Do not include the + sign.
+        Only required for phone pairing.
+      </p>
+
+      <div class="buttons">
+
+        <button
+          class="btn btn-code"
+          id="btnCode"
+          type="button"
+          onclick="startPairing('code')"
+        >
+          Pair with Code
+        </button>
+
+        <button
+          class="btn btn-qr"
+          id="btnQr"
+          type="button"
+          onclick="startPairing('qr')"
+        >
+          Pair with QR
+        </button>
+
+      </div>
+
+      <div id="result"></div>
+
+    </section>
+
+    <footer class="footer">
+      NUTTERX-MD &copy; 2026
+      <p style="margin-top:6px">
+        Keep your WhatsApp session credentials private.
+      </p>
+    </footer>
+
   </main>
 
-  <script>
-    let pollTimer = null;
+<script>
+  let pollTimer = null;
+  let currentSessionKey = null;
+  let polling = false;
+  let displayedStatus = null;
 
-    // Toast Notification Function
-    function showToast(message) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      
-      container.appendChild(toast);
-      
-      // Remove from DOM after animation ends (3 seconds)
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 3000);
+  // ==========================================
+  // TOAST NOTIFICATIONS
+  // ==========================================
+
+  function showToast(message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+
+    toast.className = 'toast';
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ==========================================
+  // POLLING MANAGEMENT
+  // ==========================================
+
+  function clearPoll() {
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
     }
 
-    function clearPoll() {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-    }
+    polling = false;
+  }
 
-    function setButtonsDisabled(disabled) {
-      document.getElementById('btnCode').disabled = disabled;
-      document.getElementById('btnQr').disabled = disabled;
-    }
+  function setButtonsDisabled(disabled) {
+    document.getElementById('btnCode').disabled = disabled;
+    document.getElementById('btnQr').disabled = disabled;
+  }
 
-    function showStarting(message = 'Connecting to WhatsApp…') {
-      document.getElementById('result').innerHTML = `
-        <div class="panel">
-          <div class="status"><span class="spinner"></span>${message}</div>
+  // ==========================================
+  // SAFE RESULT DISPLAY
+  // ==========================================
+
+  function showStarting(message = 'Connecting to WhatsApp…') {
+    if (displayedStatus === message) return;
+
+    displayedStatus = message;
+
+    const result = document.getElementById('result');
+
+    result.innerHTML = `
+      <div class="panel">
+        <div class="status">
+          <span class="spinner"></span>
+          <span id="startingMessage"></span>
         </div>
-      `;
+      </div>
+    `;
+
+    document.getElementById('startingMessage').textContent = message;
+  }
+
+  function showError(message) {
+    clearPoll();
+    currentSessionKey = null;
+    displayedStatus = 'error';
+    setButtonsDisabled(false);
+
+    const result = document.getElementById('result');
+
+    result.innerHTML = `
+      <div class="panel">
+        <h3>Something went wrong</h3>
+        <p class="error" id="errorMessage"></p>
+      </div>
+    `;
+
+    document.getElementById('errorMessage').textContent = message;
+  }
+
+  // ==========================================
+  // PAIRING CODE DISPLAY
+  // ==========================================
+
+  function showCode(pairingCode) {
+    if (displayedStatus === 'code_ready') return;
+
+    displayedStatus = 'code_ready';
+
+    const result = document.getElementById('result');
+
+    result.innerHTML = `
+      <div class="panel">
+        <h3>Enter this code on your phone</h3>
+        <p class="code" id="pairingCode"></p>
+        <p class="hint">
+          Open WhatsApp → <strong>Linked Devices</strong> →
+          <strong>Link with phone number</strong>,
+          then enter the code above.
+          Keep this page open while waiting.
+        </p>
+      </div>
+    `;
+
+    document.getElementById('pairingCode').textContent = pairingCode;
+  }
+
+  // ==========================================
+  // QR CODE DISPLAY
+  // ==========================================
+
+  function showQr(qrDataUrl) {
+    if (displayedStatus === 'qr_ready') {
+      const existing = document.getElementById('pairingQr');
+
+      if (existing && existing.src !== qrDataUrl) {
+        existing.src = qrDataUrl;
+      }
+
+      return;
     }
 
-    function showError(message) {
-      clearPoll();
-      setButtonsDisabled(false);
-      document.getElementById('result').innerHTML = `
-        <div class="panel">
-          <h3>Something went wrong</h3>
-          <p class="error">${message}</p>
+    displayedStatus = 'qr_ready';
+
+    const result = document.getElementById('result');
+
+    result.innerHTML = `
+      <div class="panel qr-wrap">
+        <h3>Scan with WhatsApp</h3>
+        <img id="pairingQr" alt="WhatsApp QR code">
+        <p class="hint">
+          Open WhatsApp → <strong>Linked Devices</strong> →
+          <strong>Link a device</strong>, and scan the QR code.
+        </p>
+      </div>
+    `;
+
+    document.getElementById('pairingQr').src = qrDataUrl;
+  }
+
+  // ==========================================
+  // CONNECTED SESSION DISPLAY
+  // ==========================================
+
+  function showConnected(sessionBlob, data = {}) {
+    clearPoll();
+    currentSessionKey = null;
+    displayedStatus = 'connected';
+    setButtonsDisabled(false);
+
+    const result = document.getElementById('result');
+
+    result.innerHTML = `
+      <div class="panel">
+        <span class="success-badge">CONNECTED SUCCESSFULLY</span>
+
+        <h3>Your NUTTERX-MD Session</h3>
+
+        <div class="session-box">
+          <textarea
+            id="sessionInput"
+            class="session-input"
+            readonly
+            spellcheck="false"
+          ></textarea>
+
+          <button
+            class="copy-btn"
+            id="copyBtn"
+            type="button"
+          >Copy Session</button>
         </div>
-      `;
+
+        <p class="hint">
+          Copy the complete session bundle and configure
+          your bot's SESSION_BLOB environment variable.
+        </p>
+
+        <p class="hint" id="deliveryStatus"></p>
+      </div>
+    `;
+
+    document.getElementById('sessionInput').value = sessionBlob;
+
+    const deliveryStatus = document.getElementById('deliveryStatus');
+
+    if (data.dmSent) {
+      deliveryStatus.textContent =
+        'Session file was also sent to your linked WhatsApp DM.';
+      deliveryStatus.style.color = '#25d366';
+    } else {
+      deliveryStatus.textContent =
+        'WhatsApp DM delivery failed: ' +
+        (data.dmError || 'Unknown error') +
+        '. You can still copy your session above.';
+      deliveryStatus.style.color = '#ff7777';
     }
 
-    function showCode(code) {
-      document.getElementById('result').innerHTML = `
-        <div class="panel">
-          <h3>Enter this code on your phone</h3>
-          <p class="code">${code}</p>
-          <p class="hint">
-            Open WhatsApp → <strong>Linked Devices</strong> → <strong>Link with phone number</strong>,
-            then enter the code above. Keep this page open while waiting.
-          </p>
-        </div>
-      `;
-    }
+    document.getElementById('copyBtn').addEventListener(
+      'click',
+      copySession
+    );
+  }
 
-    function showQr(qrDataUrl) {
-      document.getElementById('result').innerHTML = `
-        <div class="panel qr-wrap">
-          <h3>Scan with WhatsApp</h3>
-          <img src="${qrDataUrl}" alt="WhatsApp QR code" />
-          <p class="hint">
-            Open WhatsApp → <strong>Linked Devices</strong> → <strong>Link a device</strong>,
-            and scan the QR code.
-          </p>
-        </div>
-      `;
-    }
+  // ==========================================
+  // COPY SESSION
+  // ==========================================
 
-    function showConnected(sessionId) {
-      clearPoll();
-      setButtonsDisabled(false);
-      document.getElementById('result').innerHTML = `
-        <div class="panel">
-          <span class="success-badge">Connected</span>
-          <h3>Your session ID</h3>
-          <div class="session-box">
-            <textarea id="sessionInput" class="session-input" readonly>${sessionId}</textarea>
-            <button class="copy-btn" id="copyBtn" onclick="copySession()">Copy</button>
-          </div>
-          <p class="hint">
-            Copy the full string above and paste it into Heroku's
-            <code>SESSION_ID</code> config var. Then deploy — your bot will come online 24/7.
-          </p>
-        </div>
-      `;
-    }
+  async function copySession() {
+    const input = document.getElementById('sessionInput');
+    const btn = document.getElementById('copyBtn');
 
-    async function copySession() {
-      const input = document.getElementById('sessionInput');
-      const btn = document.getElementById('copyBtn');
-      if (!input || !btn) return;
+    if (!input || !btn) return;
 
-      const text = input.value;
+    const text = input.value;
 
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          input.select();
-          input.setSelectionRange(0, text.length);
-          document.execCommand('copy');
-        }
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = 'Copy';
-          btn.classList.remove('copied');
-        }, 1500);
-      } catch (err) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
         input.focus();
         input.select();
-        showToast('Could not copy automatically. Press Ctrl+C / Cmd+C.');
+        input.setSelectionRange(0, text.length);
+
+        if (!document.execCommand('copy')) {
+          throw new Error('Clipboard copy failed');
+        }
       }
+
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+
+      showToast('Session bundle copied successfully!');
+
+      setTimeout(() => {
+        if (btn.isConnected) {
+          btn.textContent = 'Copy Session';
+          btn.classList.remove('copied');
+        }
+      }, 1500);
+
+    } catch (error) {
+      input.focus();
+      input.select();
+
+      showToast('Copy failed. Select the session and press Ctrl+C.');
     }
+  }
 
-    async function startPairing(mode) {
-      clearPoll();
-      setButtonsDisabled(true);
+  // ==========================================
+  // CHECK PAIRING STATUS
+  // ==========================================
 
-      const phone = document.getElementById('phone').value.trim();
+  async function checkPairing(sessionKey) {
+    if (polling || currentSessionKey !== sessionKey) return;
 
-      // Reverted: Only Pairing Code mode requires a phone number.
-      // QR mode extracts it automatically on the backend.
-      if (mode === 'code' && !phone) {
-        setButtonsDisabled(false);
-        showToast('Enter your WhatsApp phone number first.');
+    polling = true;
+
+    try {
+      const response = await fetch(
+        '/api/pair/' + encodeURIComponent(sessionKey),
+        {
+          method: 'GET',
+          cache: 'no-store'
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Pairing session expired');
+      }
+
+      if (data.status === 'error') {
+        showError(data.error || 'WhatsApp pairing failed.');
         return;
       }
 
-      showStarting(mode === 'qr' ? 'Generating QR code…' : 'Requesting pairing code…');
-
-      let data;
-      try {
-        const res = await fetch('/api/pair', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, mode })
-        });
-        data = await res.json();
-      } catch (err) {
-        return showError('Network error: ' + err.message);
+      if (data.status === 'code_ready' && data.code) {
+        showCode(data.code);
+        return;
       }
 
-      if (data.error) return showError(data.error);
+      if (data.status === 'qr_ready' && data.qr) {
+        showQr(data.qr);
+        return;
+      }
 
-      // Backend returns { sessionKey, status: 'starting' }.
-      pollTimer = setInterval(async () => {
-        try {
-          const r = await fetch(`/api/pair/${data.sessionKey}`);
-          const d = await r.json();
+      if (data.status === 'saving') {
+        showStarting('Saving your WhatsApp session...');
+        return;
+      }
 
-          if (d.status === 'error') {
-            return showError(d.error || 'Unknown error');
-          }
+      if (data.status === 'connected' && data.sessionBlob) {
+        showConnected(data.sessionBlob, data);
+        return;
+      }
 
-          if (d.status === 'code_ready' && d.code) {
-            showCode(d.code);
-          } else if (d.status === 'qr_ready' && d.qr) {
-            showQr(d.qr);
-          } else if (d.status === 'connected' && d.sessionId) {
-            showConnected(d.sessionId);
-          }
-        } catch (err) {
-          // Ignore transient polling errors
-        }
-      }, 1500);
+      if (data.status === 'starting') {
+        showStarting('Connecting to WhatsApp...');
+      }
+
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      polling = false;
     }
-  </script>
+  }
+
+  // ==========================================
+  // START PAIRING
+  // ==========================================
+
+  async function startPairing(mode) {
+    clearPoll();
+    currentSessionKey = null;
+    displayedStatus = null;
+
+    setButtonsDisabled(true);
+
+    const phone = document.getElementById('phone').value.trim();
+
+    if (mode === 'code' && !phone) {
+      setButtonsDisabled(false);
+      showToast('Enter your WhatsApp phone number first.');
+      return;
+    }
+
+    if (!['code', 'qr'].includes(mode)) {
+      setButtonsDisabled(false);
+      showToast('Invalid pairing method.');
+      return;
+    }
+
+    showStarting(
+      mode === 'qr'
+        ? 'Generating QR code...'
+        : 'Requesting WhatsApp pairing code...'
+    );
+
+    try {
+      const response = await fetch('/api/pair', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store',
+        body: JSON.stringify({ phone, mode })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not start pairing.');
+      }
+
+      if (!data.sessionKey) {
+        throw new Error('Server did not return a session key.');
+      }
+
+      currentSessionKey = data.sessionKey;
+
+      await checkPairing(currentSessionKey);
+
+      if (currentSessionKey) {
+        scheduleNextPoll(currentSessionKey);
+      }
+
+    } catch (error) {
+      showError(error.message);
+    }
+  }
+
+  // ==========================================
+  // SCHEDULE NEXT STATUS REQUEST
+  // ==========================================
+
+  function scheduleNextPoll(sessionKey) {
+    if (currentSessionKey !== sessionKey) return;
+
+    if (!document.getElementById('btnCode').disabled) return;
+
+    pollTimer = setTimeout(async () => {
+      await checkPairing(sessionKey);
+
+      if (currentSessionKey === sessionKey) {
+        scheduleNextPoll(sessionKey);
+      }
+    }, 1500);
+  }
+
+  // ==========================================
+  // INITIALIZATION
+  // ==========================================
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setButtonsDisabled(false);
+    console.log('NUTTERX-MD pairing frontend loaded.');
+  });
+</script>
+
 </body>
 </html>
