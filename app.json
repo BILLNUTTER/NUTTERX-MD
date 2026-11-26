@@ -1,34 +1,46 @@
 {
   "name": "NUTTERX-MD",
-  "description": "WhatsApp Bot Engine",
-  "repository": "https://github.com/your-username/your-repo",
-  "root": "bot/",
-  "keywords": ["whatsapp", "bot", "baileys"],
-  "env": {
-    "SESSION_ID": {
-      "description": "Paste the Session ID generated from the pairing site.",
-      "required": true
-    },
-    "MODE": {
-      "description": "Bot mode: public or private",
-      "value": "public",
-      "required": false
-    },
-    "PREFIX": {
-      "description": "Command prefix",
-      "value": ".",
-      "required": false
-    }
-  },
-  "formation": {
-    "worker": {
-      "quantity": 1,
-      "size": "basic"
-    }
-  },
+  "description": "WhatsApp bot (Baileys) with a pairing web server. The WhatsApp session is stored in Heroku Postgres so it survives restarts.",
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "baileys",
+    "nodejs"
+  ],
   "buildpacks": [
     {
       "url": "heroku/nodejs"
     }
-  ]
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0"
+    }
+  ],
+  "env": {
+    "SESSION_ID": {
+      "description": "Your NUTTERX~ session ID from the pairing page. Only used the first time; after that the session lives in the database.",
+      "required": true
+    },
+    "OWNER_NUMBER": {
+      "description": "Optional. Your WhatsApp number with country code, digits only (e.g. 2547XXXXXXXX). Comma-separate several numbers.",
+      "required": false
+    },
+    "MODE": {
+      "description": "public (everyone can use commands) or private (owner only).",
+      "value": "public"
+    },
+    "PREFIX": {
+      "description": "Command prefix.",
+      "value": "."
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    },
+    "worker": {
+      "quantity": 1
+    }
+  }
 }
