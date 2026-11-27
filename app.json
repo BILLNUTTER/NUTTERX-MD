@@ -1,3 +1,4 @@
+
 {
   "name": "NUTTERX-MD",
   "description": "WhatsApp bot powered by Baileys. Authentication and bot settings are stored in Heroku PostgreSQL.",
@@ -8,7 +9,10 @@
     "nodejs",
     "postgresql",
     "antilink",
-    "antidelete"
+    "antidelete",
+    "antiedit",
+    "autoviewstatus",
+    "autoread"
   ],
   "buildpacks": [
     {
@@ -46,7 +50,27 @@
     },
     "ANTIDELETE": {
       "description": "Enable or disable AntiDelete: true or false.",
-      "value": "false",
+      "value": "true",
+      "required": false
+    },
+    "ANTIEDIT": {
+      "description": "Enable or disable AntiEdit: true or false.",
+      "value": "true",
+      "required": false
+    },
+    "AUTOVIEWSTATUS": {
+      "description": "Enable or disable automatic WhatsApp status viewing: true or false.",
+      "value": "true",
+      "required": false
+    },
+    "ANTICALL": {
+  "description": "Enable or disable automatic rejection of incoming WhatsApp calls.",
+  "value": "true",
+  "required": false
+    },
+    "AUTOREAD": {
+      "description": "Enable or disable automatic reading of incoming private and group messages: true or false.",
+      "value": "true",
       "required": false
     }
   },
