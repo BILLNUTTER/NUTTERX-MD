@@ -11,8 +11,9 @@
     "bot": "node bot/bot.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
     "ffmpeg-static": "^5.3.0",
+    "gifted-btns": "^1.0.2",
     "node-webpmux": "^3.2.1",
     "pg": "^8.23.1",
     "pino": "^9.14.0"
