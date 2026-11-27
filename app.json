@@ -1,13 +1,15 @@
 
 {
   "name": "NUTTERX-MD",
-  "description": "WhatsApp bot powered by Baileys with a separate pairing website. WhatsApp authentication is stored in Heroku PostgreSQL to survive restarts.",
+  "description": "WhatsApp bot powered by Baileys with a separate pairing website. WhatsApp authentication and bot feature settings are stored in Heroku PostgreSQL to survive restarts.",
   "keywords": [
     "whatsapp",
     "bot",
     "baileys",
     "nodejs",
-    "postgresql"
+    "postgresql",
+    "antilink",
+    "antidelete"
   ],
   "buildpacks": [
     {
@@ -38,8 +40,13 @@
       "value": ".",
       "required": false
     },
+    "ANTILINK": {
+      "description": "Initial global AntiLink default for new groups. Existing PostgreSQL defaults and individual group settings are never overwritten at startup.",
+      "value": "true",
+      "required": false
+    },
     "ANTIDELETE": {
-      "description": "Enable or disable the AntiDelete feature.",
+      "description": "Initial AntiDelete default. Existing PostgreSQL settings take priority and are never overwritten at startup.",
       "value": "false",
       "required": false
     }
