@@ -1,4 +1,3 @@
-
 {
   "name": "NUTTERX-MD",
   "description": "WhatsApp bot powered by Baileys. Authentication and bot settings are stored in Heroku PostgreSQL.",
@@ -12,6 +11,7 @@
     "antidelete",
     "antiedit",
     "autoviewstatus",
+    "autolikestatus",
     "autoread"
   ],
   "buildpacks": [
@@ -63,10 +63,20 @@
       "value": "true",
       "required": false
     },
+    "AUTOLIKESTATUS": {
+      "description": "Enable or disable automatic WhatsApp status liking: true or false.",
+      "value": "true",
+      "required": false
+    },
+    "AUTOLIKESTATUSEMOJIS": {
+      "description": "Emojis used to like statuses, separated by commas (e.g. ❤️,🔥,😂). One is picked at random per status.",
+      "value": "❤️,🔥,😂,👍,😍",
+      "required": false
+    },
     "ANTICALL": {
-  "description": "Enable or disable automatic rejection of incoming WhatsApp calls.",
-  "value": "true",
-  "required": false
+      "description": "Enable or disable automatic rejection of incoming WhatsApp calls.",
+      "value": "true",
+      "required": false
     },
     "AUTOREAD": {
       "description": "Enable or disable automatic reading of incoming private and group messages: true or false.",
