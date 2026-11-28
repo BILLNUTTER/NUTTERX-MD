@@ -26,12 +26,12 @@
   ],
   "env": {
     "SESSION_ID": {
-      "description": "WhatsApp session ID.",
-      "required": false
+      "description": "WhatsApp session ID. Required: the bot cannot connect without it.",
+      "required": true
     },
     "OWNER_NUMBER": {
       "description": "Bot owner's WhatsApp number with country code (e.g. 2547XXXXXXXX). Separate multiple numbers with commas.",
-      "required": false
+      "required": true
     },
     "MODE": {
       "description": "Bot access mode: public or private.",
@@ -86,10 +86,8 @@
   },
   "formation": {
     "web": {
-      "quantity": 0
-    },
-    "worker": {
-      "quantity": 1
+      "quantity": 1,
+      "size": "basic"
     }
   }
 }
