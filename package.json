@@ -7,7 +7,6 @@
     "node": "22.x"
   },
   "scripts": {
-    "start": "node -e \"console.log('NUTTERX-MD runs as a worker. Start it using the Procfile.')\"",
     "bot": "node bot/bot.js"
   },
   "dependencies": {
